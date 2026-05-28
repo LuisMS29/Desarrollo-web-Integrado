@@ -1,0 +1,147 @@
+{
+  "info": {
+    "_postman_id": "intranet-escolar-2026",
+    "name": "Intranet Escolar - API",
+    "description": "Colección completa para probar la API de Intranet Escolar con JWT",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "🔐 AUTENTICACIÓN",
+      "item": [
+        {
+          "name": "1. Login (Obtener Token)",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"admin\",\n  \"password\": \"123456\"\n}"
+            },
+            "url": {"raw": "http://localhost:8080/api/auth/login", "host": ["localhost"], "port": "8080", "path": ["api", "auth", "login"]}
+          }
+        },
+        {
+          "name": "2. Obtener Perfil (Con Token)",
+          "request": {
+            "method": "GET",
+            "header": [{"key": "Authorization", "value": "Bearer {{token}}"}],
+            "url": {"raw": "http://localhost:8080/api/auth/profile", "host": ["localhost"], "port": "8080", "path": ["api", "auth", "profile"]}
+          }
+        },
+        {
+          "name": "3. Registrar Usuario",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"nuevoestudiante\",\n  \"email\": \"nuevo@alumno.edu.pe\",\n  \"password\": \"123456\",\n  \"rol\": \"ESTUDIANTE\"\n}"
+            },
+            "url": {"raw": "http://localhost:8080/api/auth/register", "host": ["localhost"], "port": "8080", "path": ["api", "auth", "register"]}
+          }
+        }
+      ]
+    },
+    {
+      "name": "👨‍🎓 ESTUDIANTES",
+      "item": [
+        {
+          "name": "Listar Estudiantes",
+          "request": {
+            "method": "GET",
+            "header": [{"key": "Authorization", "value": "Bearer {{token}}"}],
+            "url": {"raw": "http://localhost:8080/api/estudiante/listar", "host": ["localhost"], "port": "8080", "path": ["api", "estudiante", "listar"]}
+          }
+        },
+        {
+          "name": "Obtener Estudiante por ID",
+          "request": {
+            "method": "GET",
+            "header": [{"key": "Authorization", "value": "Bearer {{token}}"}],
+            "url": {"raw": "http://localhost:8080/api/estudiante/1", "host": ["localhost"], "port": "8080", "path": ["api", "estudiante", "1"]}
+          }
+        }
+      ]
+    },
+    {
+      "name": "👨‍🏫 DOCENTES",
+      "item": [
+        {
+          "name": "Listar Docentes",
+          "request": {
+            "method": "GET",
+            "header": [{"key": "Authorization", "value": "Bearer {{token}}"}],
+            "url": {"raw": "http://localhost:8080/api/docente/listar", "host": ["localhost"], "port": "8080", "path": ["api", "docente", "listar"]}
+          }
+        }
+      ]
+    },
+    {
+      "name": "📚 CURSOS",
+      "item": [
+        {
+          "name": "Listar Cursos Activos",
+          "request": {
+            "method": "GET",
+            "header": [{"key": "Authorization", "value": "Bearer {{token}}"}],
+            "url": {"raw": "http://localhost:8080/api/curso/activos", "host": ["localhost"], "port": "8080", "path": ["api", "curso", "activos"]}
+          }
+        },
+        {
+          "name": "Listar Todos los Cursos",
+          "request": {
+            "method": "GET",
+            "header": [{"key": "Authorization", "value": "Bearer {{token}}"}],
+            "url": {"raw": "http://localhost:8080/api/curso/listar", "host": ["localhost"], "port": "8080", "path": ["api", "curso", "listar"]}
+          }
+        }
+      ]
+    },
+    {
+      "name": "📝 NOTAS",
+      "item": [
+        {
+          "name": "Listar Notas",
+          "request": {
+            "method": "GET",
+            "header": [{"key": "Authorization", "value": "Bearer {{token}}"}],
+            "url": {"raw": "http://localhost:8080/api/nota/listar", "host": ["localhost"], "port": "8080", "path": ["api", "nota", "listar"]}
+          }
+        }
+      ]
+    },
+    {
+      "name": "📋 ASISTENCIA",
+      "item": [
+        {
+          "name": "Listar Asistencias",
+          "request": {
+            "method": "GET",
+            "header": [{"key": "Authorization", "value": "Bearer {{token}}"}],
+            "url": {"raw": "http://localhost:8080/api/asistencia/listar", "host": ["localhost"], "port": "8080", "path": ["api", "asistencia", "listar"]}
+          }
+        }
+      ]
+    },
+    {
+      "name": "👤 ADMIN (Solo ADMIN)",
+      "item": [
+        {
+          "name": "Listar Usuarios",
+          "request": {
+            "method": "GET",
+            "header": [{"key": "Authorization", "value": "Bearer {{token}}"}],
+            "url": {"raw": "http://localhost:8080/api/admin/usuarios", "host": ["localhost"], "port": "8080", "path": ["api", "admin", "usuarios"]}
+          }
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "token",
+      "value": "eyJhbGciOiJIUzI1NiJ9..."
+    }
+  ]
+}

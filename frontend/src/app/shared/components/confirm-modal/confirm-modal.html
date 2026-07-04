@@ -1,0 +1,22 @@
+@if (show) {
+  <div class="modal d-block" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">{{ title }}</h5>
+          <button type="button" class="btn-close" (click)="cancel.emit()" [disabled]="loading"></button>
+        </div>
+        <div class="modal-body">
+          <p class="mb-0">{{ message }}</p>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline-secondary" (click)="cancel.emit()" [disabled]="loading">Cancelar</button>
+          <button type="button" class="btn" [class.btn-primary]="confirmVariant==='primary'" [class.btn-danger]="confirmVariant==='danger'" (click)="confirm.emit()" [disabled]="loading">
+            @if (loading) { Procesando... } @else { {{ confirmLabel }} }
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="modal-backdrop show"></div>
+}

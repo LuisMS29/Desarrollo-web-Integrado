@@ -1,0 +1,29 @@
+<div class="dropdown" style="position:relative;display:inline-block;">
+  <button class="btn btn-sm position-relative" style="background:none;border:none;color:var(--ie-ink-soft);" (click)="toggle()">
+    🔔
+    @if (noLeidas > 0) {
+      <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style="font-size:0.6rem;">
+        {{ noLeidas > 9 ? '9+' : noLeidas }}
+      </span>
+    }
+  </button>
+
+  @if (open) {
+    <div style="position:absolute;top:100%;right:0;z-index:1050;min-width:320px;background:var(--ie-card-bg);border:1px solid var(--ie-line);border-radius:var(--ie-radius);box-shadow:var(--ie-shadow-lg);margin-top:0.25rem;">
+      <div class="p-3 border-bottom">
+        <strong class="font-display small">Notificaciones</strong>
+      </div>
+      <div style="max-height:300px;overflow-y:auto;">
+        @if (notificaciones.length === 0) {
+          <div class="p-3 text-center text-secondary small">Sin notificaciones.</div>
+        }
+        @for (n of notificaciones; track n.idNotificacion) {
+          <div class="p-3 border-bottom" [class.bg-light]="!n.leida" style="cursor:pointer;" (click)="marcarLeida(n.idNotificacion)">
+            <div class="small fw-semibold">{{ n.titulo }}</div>
+            <div class="small text-secondary">{{ n.mensaje }}</div>
+          </div>
+        }
+      </div>
+    </div>
+  }
+</div>

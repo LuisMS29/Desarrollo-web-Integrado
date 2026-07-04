@@ -1,0 +1,33 @@
+<div class="ie-card p-3 mb-3">
+  <input type="text" class="form-control" placeholder="Buscar comunicados..." [(ngModel)]="search" (input)="applyFilter()" />
+</div>
+
+@if (loading) {
+  <app-loading-state label="Cargando comunicados..."></app-loading-state>
+} @else if (error) {
+  <app-error-state [message]="error" (retry)="load()"></app-error-state>
+} @else if (filtered.length === 0) {
+  <div class="ie-card p-4 text-center py-5">
+    <p class="text-secondary mb-0">
+      {{ search ? 'No hay comunicados que coincidan con la búsqueda.' : 'No hay comunicados vigentes por el momento.' }}
+    </p>
+  </div>
+} @else {
+  <div class="d-flex flex-column gap-3">
+    @for (c of filtered; track c.idComunicado) {
+      <div class="ie-card p-4">
+        <div class="d-flex justify-content-between align-items-start mb-2 gap-2">
+          <h3 class="font-display h6 fw-bold mb-0">{{ c.titulo }}</h3>
+          <span class="badge text-bg-light border small text-nowrap">
+            {{ c.fechaPublicacion ? (c.fechaPublicacion | date:'dd/MM/yyyy') : '' }}
+          </span>
+        </div>
+        <p class="mb-2" style="white-space:pre-line;">{{ c.contenido }}</p>
+        <div class="small text-secondary">
+          Dirigido a: {{ c.dirigidoA }}
+          @if (c.usuarioAutor?.username) { · Publicado por {{ c.usuarioAutor.username }} }
+        </div>
+      </div>
+    }
+  </div>
+}

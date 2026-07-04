@@ -1,0 +1,91 @@
+<div>
+  <div class="mb-4">
+    <h1 class="font-display fw-bold h3 mb-1">Panel principal</h1>
+    <p class="text-secondary mb-0">Resumen general del sistema. Usa el menú lateral para administrar cada sección.</p>
+  </div>
+
+  @if (loading) {
+    <app-loading-state label="Cargando indicadores..."></app-loading-state>
+  } @else {
+    @if (failedResources.length > 0) {
+      <div class="alert alert-warning small">
+        No se pudieron cargar algunos indicadores ({{ failedResources.join(', ') }}). Verifica que el backend esté disponible.
+      </div>
+    }
+
+    <div class="row g-3 mb-4">
+      @for (stat of statConfig; track stat.key) {
+        <div class="col-6 col-lg-3">
+          <a [routerLink]="stat.link" class="text-decoration-none">
+            <div class="ie-stat-card h-100">
+              <div class="accent-bar" [style.background]="stat.accent"></div>
+              <div class="label">{{ stat.label }}</div>
+              <div class="value">{{ counts[stat.key] === null ? '—' : counts[stat.key] }}</div>
+            </div>
+          </a>
+        </div>
+      }
+    </div>
+
+    <div class="row g-3 mb-4">
+      <div class="col-md-7">
+        <div class="ie-card p-4 h-100">
+          <h2 class="font-display h5 fw-bold mb-3">Distribución general</h2>
+          <div class="d-flex flex-column gap-3">
+            @for (s of statConfig; track s.key; let i = $index) {
+              <div>
+                <div class="d-flex justify-content-between small mb-1">
+                  <span class="fw-semibold">{{ s.label }}</span>
+                  <span class="text-secondary">{{ counts[s.key] ?? '—' }}</span>
+                </div>
+                <div class="chart-bar-track">
+                  <div class="chart-bar-fill" [style.width.%]="counts[s.key] != null ? (counts[s.key] / maxCount()) * 100 : 0" [style.background]="s.accent"></div>
+                </div>
+              </div>
+            }
+          </div>
+        </div>
+      </div>
+      <div class="col-md-5">
+        <div class="ie-card p-4 h-100">
+          <h2 class="font-display h5 fw-bold mb-3">Usuarios por rol</h2>
+          @if (roleCounts.length === 0) {
+            <p class="text-secondary small mb-0">Sin datos.</p>
+          } @else {
+            <div class="d-flex flex-column gap-2">
+              @for (r of roleCounts; track r.rol) {
+                <div>
+                  <div class="d-flex justify-content-between small mb-1">
+                    <span class="fw-semibold">{{ r.rol }}</span>
+                    <span class="text-secondary">{{ r.count }} ({{ totalRoles > 0 ? (r.count / totalRoles * 100).toFixed(0) : 0 }}%)</span>
+                  </div>
+                  <div class="chart-bar-track">
+                    <div class="chart-bar-fill" [style.width.%]="totalRoles > 0 ? (r.count / totalRoles * 100) : 0" [style.background]="'var(--ie-accent)'"></div>
+                  </div>
+                </div>
+              }
+            </div>
+          }
+        </div>
+      </div>
+    </div>
+
+    <div class="ie-card p-4">
+      <h2 class="font-display h5 fw-bold mb-3">Accesos rápidos</h2>
+      <div class="row g-3">
+        <div class="col-md-6 col-lg-3">
+          <a routerLink="/admin/usuarios" class="text-decoration-none"><div class="border rounded-3 p-3 h-100" style="border-color:var(--ie-line);"><div class="fw-semibold text-dark mb-1">Gestionar usuarios</div><div class="small text-secondary">Activa, desactiva o elimina cuentas por rol.</div></div></a>
+        </div>
+        <div class="col-md-6 col-lg-3">
+          <a routerLink="/admin/docentes" class="text-decoration-none"><div class="border rounded-3 p-3 h-100" style="border-color:var(--ie-line);"><div class="fw-semibold text-dark mb-1">Registrar docente</div><div class="small text-secondary">Alta y edición del personal docente.</div></div></a>
+        </div>
+        <div class="col-md-6 col-lg-3">
+          <a routerLink="/admin/grados" class="text-decoration-none"><div class="border rounded-3 p-3 h-100" style="border-color:var(--ie-line);"><div class="fw-semibold text-dark mb-1">Estructura académica</div><div class="small text-secondary">Grados, secciones, cursos y períodos.</div></div></a>
+        </div>
+        <div class="col-md-6 col-lg-3">
+          <a routerLink="/admin/comunicados" class="text-decoration-none"><div class="border rounded-3 p-3 h-100" style="border-color:var(--ie-line);"><div class="fw-semibold text-dark mb-1">Publicar comunicado</div><div class="small text-secondary">Notifica a toda la comunidad escolar.</div></div></a>
+        </div>
+      </div>
+    </div>
+  }
+</div>

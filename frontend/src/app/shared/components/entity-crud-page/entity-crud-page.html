@@ -1,0 +1,135 @@
+<div>
+  <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-4">
+    <div>
+      <h1 class="font-display fw-bold h3 mb-1">{{ title }}</h1>
+      @if (subtitle) { <p class="text-secondary mb-0">{{ subtitle }}</p> }
+    </div>
+    @if (canCreate) {
+      <button class="btn btn-accent" (click)="openCreate()">+ Nuevo registro</button>
+    }
+  </div>
+
+  @if (searchable || sortOptions.length > 0) {
+    <div class="ie-card p-3 mb-3">
+      <div class="row g-2 align-items-end">
+        @if (searchable) {
+          <div class="col-md-6">
+            <input type="text" class="form-control" [placeholder]="searchPlaceholder" [(ngModel)]="search" (input)="applyFilter()" />
+          </div>
+        }
+        @if (sortOptions.length > 0) {
+          <div class="col-md-4">
+            <div class="input-group">
+              <select class="form-select" [(ngModel)]="sortField" (change)="applyFilter()">
+                <option value="">Ordenar por</option>
+                @for (opt of sortOptions; track opt.key) {
+                  <option [value]="opt.key">{{ opt.label }}</option>
+                }
+              </select>
+              <button class="btn btn-outline-secondary" (click)="sortDir = sortDir === 'asc' ? 'desc' : 'asc'; applyFilter()" [title]="sortDir === 'asc' ? 'A-Z' : 'Z-A'">
+                {{ sortDir === 'asc' ? 'A-Z ↑' : 'Z-A ↓' }}
+              </button>
+            </div>
+          </div>
+        }
+      </div>
+    </div>
+  }
+
+  @if (loading) {
+    <app-loading-state></app-loading-state>
+  } @else if (error) {
+    <app-error-state [message]="error" (retry)="load()"></app-error-state>
+  } @else {
+    <div class="ie-card">
+      <div class="table-responsive">
+        <table class="table ie-table mb-0">
+          <thead>
+            <tr>
+              @for (c of columns; track c.key) { <th>{{ c.label }}</th> }
+              @if (canEdit || canDelete) { <th class="text-end">Acciones</th> }
+            </tr>
+          </thead>
+          <tbody>
+            @if (filtered.length === 0) {
+              <tr><td [attr.colspan]="columns.length + 1" class="text-center text-secondary py-4">
+                {{ canCreate ? 'Aún no hay registros. Crea el primero con el botón superior.' : 'Aún no hay registros.' }}
+              </td></tr>
+            }
+            @for (row of filtered; track row[idKey]) {
+              <tr>
+                @for (c of columns; track c.key) {
+                  <td>{{ c.render ? c.render(row) : (row[c.key] ?? '—') }}</td>
+                }
+                @if (canEdit || canDelete) {
+                  <td class="text-end">
+                    @if (canEdit) {
+                      <button class="btn btn-sm btn-outline-primary me-2" (click)="openEdit(row)">Editar</button>
+                    }
+                    @if (canDelete) {
+                      <button class="btn btn-sm btn-outline-danger" (click)="confirmDelete(row)">Eliminar</button>
+                    }
+                  </td>
+                }
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </div>
+  }
+
+  @if (showForm) {
+    <div class="modal d-block" tabindex="-1">
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+          <form (ngSubmit)="handleSubmit()">
+            <div class="modal-header">
+              <h5 class="modal-title font-display">{{ editingRow ? 'Editar registro' : 'Nuevo registro' }}</h5>
+              <button type="button" class="btn-close" (click)="showForm = false" [disabled]="saving"></button>
+            </div>
+            <div class="modal-body">
+              @if (formError) { <div class="alert alert-danger py-2 small">{{ formError }}</div> }
+              @for (f of fields; track f.key) {
+                <div class="mb-3">
+                  <label class="form-label small fw-semibold">
+                    {{ f.label }} @if (f.required) { <span class="text-danger">*</span> }
+                  </label>
+                  @if (f.type === 'textarea') {
+                    <textarea class="form-control" rows="3" [value]="form[f.key]" (input)="handleChange(f, $any($event.target).value)" [disabled]="saving"></textarea>
+                  } @else if (f.type === 'boolean') {
+                    <div class="form-check form-switch">
+                      <input type="checkbox" class="form-check-input" [checked]="!!form[f.key]" (change)="handleChange(f, $any($event.target).checked)" [disabled]="saving" />
+                    </div>
+                  } @else if (f.type === 'select' || f.type === 'relation') {
+                    <select class="form-select" [value]="form[f.key] || ''" (change)="handleChange(f, $any($event.target).value)" [disabled]="saving">
+                      <option value="" disabled>Selecciona una opción</option>
+                      @if (f.type === 'select') {
+                        @for (opt of f.options; track opt.value) {
+                          <option [value]="opt.value">{{ opt.label }}</option>
+                        }
+                      }
+                    </select>
+                  } @else {
+                    <input [type]="f.type === 'number' ? 'number' : f.type === 'date' ? 'date' : 'text'" class="form-control"
+                      [value]="form[f.key]" (input)="handleChange(f, $any($event.target).value)" [disabled]="saving" />
+                  }
+                </div>
+              }
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-outline-secondary" (click)="showForm = false" [disabled]="saving">Cancelar</button>
+              <button type="submit" class="btn btn-primary" [disabled]="saving">
+                {{ saving ? 'Guardando...' : editingRow ? 'Guardar cambios' : 'Crear' }}
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+    <div class="modal-backdrop show"></div>
+  }
+
+  <app-confirm-modal [show]="!!deleteTarget" title="Eliminar registro" message="Esta acción no se puede deshacer. ¿Deseas eliminar este registro?"
+    confirmLabel="Eliminar" confirmVariant="danger" [loading]="deleteLoading" (confirm)="handleDelete()" (cancel)="deleteTarget = null"></app-confirm-modal>
+</div>

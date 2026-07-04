@@ -1,0 +1,84 @@
+<div>
+  <div class="mb-4">
+    <h1 class="font-display fw-bold h3 mb-1">Hola, {{ docente?.nombres }} {{ docente?.apellidos }}</h1>
+    <p class="text-secondary mb-0">
+      @if (docente?.especialidad) { Especialidad: {{ docente.especialidad }} · }
+      Código {{ docente?.codigoDocente }}
+    </p>
+  </div>
+
+  @if (loading) {
+    <app-loading-state label="Cargando tu información..."></app-loading-state>
+  } @else {
+    <div class="row g-3 mb-4">
+      <div class="col-6 col-lg-3">
+        <div class="ie-stat-card h-100">
+          <div class="accent-bar" style="background:var(--ie-primary);"></div>
+          <div class="label">Cursos a cargo</div>
+          <div class="value">{{ cursos.length }}</div>
+        </div>
+      </div>
+      <div class="col-6 col-lg-3">
+        <div class="ie-stat-card h-100">
+          <div class="accent-bar" style="background:var(--ie-success);"></div>
+          <div class="label">Estudiantes</div>
+          <div class="value">{{ totalEstudiantes() }}</div>
+        </div>
+      </div>
+    </div>
+
+    @if (estudiantesPorCurso.length > 0) {
+      <div class="ie-card p-4 mb-4">
+        <h2 class="font-display h5 fw-bold mb-3">Estudiantes por curso</h2>
+        <div class="d-flex flex-column gap-3">
+          @for (e of estudiantesPorCurso; track e.curso.idCurso; let i = $index) {
+            <div>
+              <div class="d-flex justify-content-between small mb-1">
+                <span class="fw-semibold">{{ e.curso.asignatura?.nombre }} · {{ e.curso.grado?.nombre }}{{ e.curso.seccion?.nombre }}</span>
+                <span class="text-secondary">{{ e.count }}</span>
+              </div>
+              <div class="chart-bar-track">
+                <div class="chart-bar-fill" [style.width.%]="(e.count / maxEst()) * 100" [style.background]="['var(--ie-primary)', '#2f7ea6', 'var(--ie-success)', 'var(--ie-accent)', '#7a4e9e', '#d97706'][i % 6]"></div>
+              </div>
+            </div>
+          }
+        </div>
+      </div>
+    }
+
+    <div class="ie-card p-4 mb-4">
+      <h2 class="font-display h5 fw-bold mb-3">Mis cursos</h2>
+      @if (cursos.length === 0) {
+        <p class="text-secondary mb-0">Aún no tienes cursos asignados.</p>
+      } @else {
+        <div class="table-responsive">
+          <table class="table ie-table mb-0">
+            <thead><tr><th>Asignatura</th><th>Grado / Sección</th><th>Período</th><th class="text-end">Acciones</th></tr></thead>
+            <tbody>
+              @for (c of cursos; track c.idCurso) {
+                <tr>
+                  <td>{{ c.asignatura?.nombre ?? '—' }}</td>
+                  <td>{{ c.grado?.nombre ?? '—' }}{{ c.seccion?.nombre ?? '' }}</td>
+                  <td>{{ c.periodoAcademico ? c.periodoAcademico.nombre + ' (' + c.periodoAcademico.anio + ')' : '—' }}</td>
+                  <td class="text-end">
+                    <a [routerLink]="['/docente/cursos', c.idCurso, 'notas']" class="btn btn-sm btn-outline-primary me-2">Notas</a>
+                    <a [routerLink]="['/docente/cursos', c.idCurso, 'asistencia']" class="btn btn-sm btn-outline-primary">Asistencia</a>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      }
+    </div>
+
+    <div class="ie-card p-4">
+      <h2 class="font-display h5 fw-bold mb-3">Accesos rápidos</h2>
+      <div class="row g-3">
+        <div class="col-md-6 col-lg-4"><a routerLink="/docente/cursos" class="text-decoration-none"><div class="border rounded-3 p-3 h-100" style="border-color:var(--ie-line);"><div class="fw-semibold text-dark mb-1">Ver mis cursos</div><div class="small text-secondary">Consulta el detalle y horario de cada curso.</div></div></a></div>
+        <div class="col-md-6 col-lg-4"><a routerLink="/docente/estudiantes" class="text-decoration-none"><div class="border rounded-3 p-3 h-100" style="border-color:var(--ie-line);"><div class="fw-semibold text-dark mb-1">Mis estudiantes</div><div class="small text-secondary">Lista consolidada de alumnos a tu cargo.</div></div></a></div>
+        <div class="col-md-6 col-lg-4"><a routerLink="/docente/comunicados" class="text-decoration-none"><div class="border rounded-3 p-3 h-100" style="border-color:var(--ie-line);"><div class="fw-semibold text-dark mb-1">Comunicados</div><div class="small text-secondary">Avisos institucionales dirigidos a docentes.</div></div></a></div>
+      </div>
+    </div>
+  }
+</div>

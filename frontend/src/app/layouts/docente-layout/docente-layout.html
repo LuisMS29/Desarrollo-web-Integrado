@@ -1,0 +1,10 @@
+<div class="d-flex">
+  <app-sidebar [navItems]="navItems" [open]="sidebarOpen" (close)="sidebarOpen = false"></app-sidebar>
+  <div class="ie-content flex-grow-1">
+    <div class="d-flex align-items-center justify-content-between mb-3 d-md-none">
+      <button class="btn btn-outline-secondary btn-sm" (click)="sidebarOpen = !sidebarOpen">☰ Menú</button>
+      <app-notificaciones-dropdown></app-notificaciones-dropdown>
+    </div>
+    <router-outlet></router-outlet>
+  </div>
+</div>

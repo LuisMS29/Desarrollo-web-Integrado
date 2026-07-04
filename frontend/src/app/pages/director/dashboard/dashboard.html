@@ -1,0 +1,58 @@
+<div>
+  <div class="mb-4">
+    <h1 class="font-display fw-bold h3 mb-1">Panel de Dirección</h1>
+    <p class="text-secondary mb-0">Gestión académica: cursos, matrículas, docentes y comunicados institucionales.</p>
+  </div>
+
+  @if (loading) {
+    <app-loading-state label="Cargando indicadores..."></app-loading-state>
+  } @else {
+    @if (periodoActivo) {
+      <div class="alert alert-success small d-flex align-items-center justify-content-between">
+        <span>Período académico activo: <strong>{{ periodoActivo.nombre }} ({{ periodoActivo.anio }})</strong></span>
+        <a routerLink="/director/periodos" class="btn btn-sm btn-outline-success">Ver períodos</a>
+      </div>
+    }
+
+    <div class="row g-3 mb-4">
+      @for (stat of statConfig; track stat.key) {
+        <div class="col-6 col-lg-3">
+          <a [routerLink]="stat.link" class="text-decoration-none">
+            <div class="ie-stat-card h-100">
+              <div class="accent-bar" [style.background]="stat.accent"></div>
+              <div class="label">{{ stat.label }}</div>
+              <div class="value">{{ counts[stat.key] ?? '—' }}</div>
+            </div>
+          </a>
+        </div>
+      }
+    </div>
+
+    <div class="ie-card p-4 mb-4">
+      <h2 class="font-display h5 fw-bold mb-3">Distribución general</h2>
+      <div class="d-flex flex-column gap-3">
+        @for (s of statConfig; track s.key; let i = $index) {
+          <div>
+            <div class="d-flex justify-content-between small mb-1">
+              <span class="fw-semibold">{{ s.label }}</span>
+              <span class="text-secondary">{{ counts[s.key] ?? '—' }}</span>
+            </div>
+            <div class="chart-bar-track">
+              <div class="chart-bar-fill" [style.width.%]="counts[s.key] != null ? (counts[s.key] / maxCount()) * 100 : 0" [style.background]="s.accent"></div>
+            </div>
+          </div>
+        }
+      </div>
+    </div>
+
+    <div class="ie-card p-4">
+      <h2 class="font-display h5 fw-bold mb-3">Accesos rápidos</h2>
+      <div class="row g-3">
+        <div class="col-md-6 col-lg-3"><a routerLink="/director/cursos" class="text-decoration-none"><div class="border rounded-3 p-3 h-100" style="border-color:var(--ie-line);"><div class="fw-semibold text-dark mb-1">Organizar cursos</div><div class="small text-secondary">Asigna docentes, grado, sección y período.</div></div></a></div>
+        <div class="col-md-6 col-lg-3"><a routerLink="/director/matriculas" class="text-decoration-none"><div class="border rounded-3 p-3 h-100" style="border-color:var(--ie-line);"><div class="fw-semibold text-dark mb-1">Matricular estudiantes</div><div class="small text-secondary">Inscribe alumnos en los cursos.</div></div></a></div>
+        <div class="col-md-6 col-lg-3"><a routerLink="/director/horarios" class="text-decoration-none"><div class="border rounded-3 p-3 h-100" style="border-color:var(--ie-line);"><div class="fw-semibold text-dark mb-1">Definir horarios</div><div class="small text-secondary">Día, hora y aula de cada curso.</div></div></a></div>
+        <div class="col-md-6 col-lg-3"><a routerLink="/director/comunicados" class="text-decoration-none"><div class="border rounded-3 p-3 h-100" style="border-color:var(--ie-line);"><div class="fw-semibold text-dark mb-1">Publicar comunicado</div><div class="small text-secondary">Notifica a toda la comunidad escolar.</div></div></a></div>
+      </div>
+    </div>
+  }
+</div>

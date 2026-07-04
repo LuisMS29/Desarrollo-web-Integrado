@@ -1,0 +1,36 @@
+<div class="d-flex" style="min-height:100vh;">
+  <div class="d-none d-md-flex flex-column justify-content-center align-items-center text-white p-5" style="flex:1;background:linear-gradient(135deg, var(--ie-primary-dark), var(--ie-primary));">
+    <div class="text-center" style="max-width:380px;">
+      <div class="display-3 fw-bold font-display mb-2" style="color:var(--ie-accent);">Intranet</div>
+      <div class="display-6 fw-bold font-display mb-4 text-white-50">Escolar</div>
+      <p class="text-white-50 small">Sistema de gestión académica. Accede con tus credenciales institucionales.</p>
+    </div>
+  </div>
+  <div class="d-flex flex-column justify-content-center align-items-center p-4" style="flex:1;background:#fff;">
+    <div style="max-width:360px;width:100%;">
+      <div class="text-center mb-4 d-md-none">
+        <div class="h4 fw-bold font-display" style="color:var(--ie-accent);">Intranet Escolar</div>
+      </div>
+      <h2 class="font-display fw-bold h4 mb-1">Iniciar sesión</h2>
+      <p class="text-secondary small mb-4">Ingresa tu usuario y contraseña</p>
+
+      @if (error) {
+        <div class="alert alert-danger py-2 small">{{ error }}</div>
+      }
+
+      <form (ngSubmit)="onSubmit()">
+        <div class="mb-3">
+          <label class="form-label small fw-semibold">Usuario</label>
+          <input type="text" class="form-control" placeholder="Tu nombre de usuario" [(ngModel)]="username" name="username" [disabled]="loading" required />
+        </div>
+        <div class="mb-4">
+          <label class="form-label small fw-semibold">Contraseña</label>
+          <input type="password" class="form-control" placeholder="••••••••" [(ngModel)]="password" name="password" [disabled]="loading" required />
+        </div>
+        <button type="submit" class="btn btn-accent w-100" [disabled]="loading">
+          {{ loading ? 'Ingresando...' : 'Ingresar' }}
+        </button>
+      </form>
+    </div>
+  </div>
+</div>

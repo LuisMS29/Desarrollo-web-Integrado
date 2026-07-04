@@ -1,0 +1,43 @@
+<div>
+  <div class="mb-4">
+    <h1 class="font-display fw-bold h3 mb-1">Mis cursos</h1>
+    <p class="text-secondary mb-0">Cursos que tienes asignados en el período académico vigente.</p>
+  </div>
+
+  @if (loading) {
+    <app-loading-state label="Cargando tus cursos..."></app-loading-state>
+  } @else if (cursos.length === 0) {
+    <div class="ie-card p-4 text-center py-5"><p class="text-secondary mb-0">Todavía no tienes cursos asignados.</p></div>
+  } @else {
+    <div class="row g-3">
+      @for (c of cursos; track c.idCurso) {
+        <div class="col-md-6 col-xl-4">
+          <div class="ie-card p-3 h-100 d-flex flex-column">
+            <div class="mb-2">
+              <span class="badge-rol DOCENTE mb-2 d-inline-block">{{ c.grado?.nombre ?? '—' }}{{ c.seccion?.nombre ?? '' }}</span>
+              <h3 class="font-display h6 fw-bold mb-0">{{ c.asignatura?.nombre ?? '—' }}</h3>
+              <div class="small text-secondary">{{ c.periodoAcademico ? c.periodoAcademico.nombre + ' (' + c.periodoAcademico.anio + ')' : '—' }}</div>
+            </div>
+            <div class="small text-secondary mb-3 flex-grow-1">
+              @if (loadingHorarios) {
+                Cargando horario...
+              } @else if ((horariosPorCurso[c.idCurso] || []).length === 0) {
+                Sin horario asignado.
+              } @else {
+                <ul class="mb-0 ps-3">
+                  @for (h of horariosPorCurso[c.idCurso] || []; track h.idHorario) {
+                    <li>{{ dias[h.diaSemana] ?? h.diaSemana }} · {{ h.horaInicio }}–{{ h.horaFin }}{{ h.aula ? ' · Aula ' + h.aula : '' }}</li>
+                  }
+                </ul>
+              }
+            </div>
+            <div class="d-flex gap-2">
+              <a [routerLink]="['/docente/cursos', c.idCurso, 'notas']" class="btn btn-sm btn-primary flex-fill">Notas</a>
+              <a [routerLink]="['/docente/cursos', c.idCurso, 'asistencia']" class="btn btn-sm btn-outline-primary flex-fill">Asistencia</a>
+            </div>
+          </div>
+        </div>
+      }
+    </div>
+  }
+</div>

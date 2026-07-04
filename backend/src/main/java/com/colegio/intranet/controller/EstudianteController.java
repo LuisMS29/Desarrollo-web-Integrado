@@ -33,7 +33,12 @@ public class EstudianteController {
             String numPart = maxCodigo.get().substring(3);
             next = Integer.parseInt(numPart) + 1;
         }
-        return "EST" + String.format("%04d", next);
+        String codigo = "EST" + String.format("%04d", next);
+        while (estudianteRepository.findByCodigoEstudiante(codigo).isPresent()) {
+            next++;
+            codigo = "EST" + String.format("%04d", next);
+        }
+        return codigo;
     }
 
     private Estudiante obtenerOCrear(Usuario usuario) {

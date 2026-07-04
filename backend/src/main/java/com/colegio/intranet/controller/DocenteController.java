@@ -33,7 +33,12 @@ public class DocenteController {
             String numPart = maxCodigo.get().substring(3);
             next = Integer.parseInt(numPart) + 1;
         }
-        return "DOC" + String.format("%04d", next);
+        String codigo = "DOC" + String.format("%04d", next);
+        while (docenteRepository.findByCodigoDocente(codigo).isPresent()) {
+            next++;
+            codigo = "DOC" + String.format("%04d", next);
+        }
+        return codigo;
     }
 
     private Docente obtenerOCrear(Usuario usuario) {

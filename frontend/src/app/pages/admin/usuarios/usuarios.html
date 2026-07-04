@@ -119,4 +119,9 @@
     </div>
     <div class="modal-backdrop show"></div>
   }
+
+  @if (alertMessage) {
+    <app-confirm-modal [show]="true" [title]="alertTitle" [message]="alertMessage" confirmLabel="Entendido" confirmVariant="primary"
+      (confirm)="alertMessage = ''; alertTitle = ''" (cancel)="alertMessage = ''; alertTitle = ''"></app-confirm-modal>
+  }
 </div>

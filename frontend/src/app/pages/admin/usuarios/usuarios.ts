@@ -22,6 +22,8 @@ export class AdminUsuarios implements OnInit {
   form = { username: '', email: '', password: '', rol: 'ESTUDIANTE' };
   formErrors: any = {};
   saving = false;
+  alertMessage = '';
+  alertTitle = '';
 
   roles = ['ADMIN', 'DIRECTOR', 'DOCENTE', 'ESTUDIANTE'];
 
@@ -87,8 +89,10 @@ export class AdminUsuarios implements OnInit {
         this.saving = false;
       },
       error: (err: any) => {
-        this.toast.error(err.friendlyMessage || 'Error al crear.');
+        this.alertTitle = 'No se pudo crear el usuario';
+        this.alertMessage = err.error?.message || err.friendlyMessage || 'Ocurrió un error al crear el usuario.';
         this.saving = false;
+        this.cdr.detectChanges();
       }
     });
   }
@@ -100,7 +104,11 @@ export class AdminUsuarios implements OnInit {
         this.toast.success(`Usuario "${usuario.username}" ${usuario.activo ? 'desactivado' : 'activado'}.`);
         this.load();
       },
-      error: (err: any) => this.toast.error(err.friendlyMessage || 'Error al cambiar estado.')
+      error: (err: any) => {
+        this.alertTitle = 'Error';
+        this.alertMessage = err.error?.message || err.friendlyMessage || 'Error al cambiar estado.';
+        this.cdr.detectChanges();
+      }
     });
   }
 
@@ -110,7 +118,11 @@ export class AdminUsuarios implements OnInit {
         this.toast.success(`Usuario "${usuario.username}" eliminado.`);
         this.load();
       },
-      error: (err: any) => this.toast.error(err.friendlyMessage || 'Error al eliminar.')
+      error: (err: any) => {
+        this.alertTitle = 'Error';
+        this.alertMessage = err.error?.message || err.friendlyMessage || 'Error al eliminar.';
+        this.cdr.detectChanges();
+      }
     });
   }
 }

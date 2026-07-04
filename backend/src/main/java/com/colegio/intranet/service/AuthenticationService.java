@@ -9,6 +9,7 @@ import com.colegio.intranet.repository.DocenteRepository;
 import com.colegio.intranet.repository.EstudianteRepository;
 import com.colegio.intranet.repository.UsuarioRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -94,18 +95,22 @@ public class AuthenticationService {
         
         usuario = usuarioRepository.save(usuario);
 
-        if (request.getRol() == Usuario.Rol.ESTUDIANTE) {
-            Estudiante estudiante = new Estudiante();
-            estudiante.setCodigoEstudiante(generarCodigoEstudiante());
-            estudiante.setUsuario(usuario);
-            estudiante.setPerfilCompleto(false);
-            estudianteRepository.save(estudiante);
-        } else if (request.getRol() == Usuario.Rol.DOCENTE) {
-            Docente docente = new Docente();
-            docente.setCodigoDocente(generarCodigoDocente());
-            docente.setUsuario(usuario);
-            docente.setPerfilCompleto(false);
-            docenteRepository.save(docente);
+        try {
+            if (request.getRol() == Usuario.Rol.ESTUDIANTE) {
+                Estudiante estudiante = new Estudiante();
+                estudiante.setCodigoEstudiante(generarCodigoEstudiante());
+                estudiante.setUsuario(usuario);
+                estudiante.setPerfilCompleto(false);
+                estudianteRepository.save(estudiante);
+            } else if (request.getRol() == Usuario.Rol.DOCENTE) {
+                Docente docente = new Docente();
+                docente.setCodigoDocente(generarCodigoDocente());
+                docente.setUsuario(usuario);
+                docente.setPerfilCompleto(false);
+                docenteRepository.save(docente);
+            }
+        } catch (DataIntegrityViolationException e) {
+            throw new RuntimeException("No se pudo crear el perfil de " + request.getRol().name().toLowerCase() + ". Verifica que el código o DNI no estén duplicados.");
         }
         
         return usuario;
@@ -118,7 +123,12 @@ public class AuthenticationService {
             String numPart = maxCodigo.get().substring(3);
             next = Integer.parseInt(numPart) + 1;
         }
-        return "EST" + String.format("%04d", next);
+        String codigo = "EST" + String.format("%04d", next);
+        while (estudianteRepository.findByCodigoEstudiante(codigo).isPresent()) {
+            next++;
+            codigo = "EST" + String.format("%04d", next);
+        }
+        return codigo;
     }
 
     private String generarCodigoDocente() {
@@ -128,6 +138,11 @@ public class AuthenticationService {
             String numPart = maxCodigo.get().substring(3);
             next = Integer.parseInt(numPart) + 1;
         }
-        return "DOC" + String.format("%04d", next);
+        String codigo = "DOC" + String.format("%04d", next);
+        while (docenteRepository.findByCodigoDocente(codigo).isPresent()) {
+            next++;
+            codigo = "DOC" + String.format("%04d", next);
+        }
+        return codigo;
     }
 }

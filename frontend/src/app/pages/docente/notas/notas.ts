@@ -1,6 +1,8 @@
 import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
+import { forkJoin } from 'rxjs';
 import { ApiService } from '../../../core/services/api.service';
+import { AuthService } from '../../../core/services/auth.service';
 import { ToastService } from '../../../core/services/toast.service';
 
 @Component({
@@ -14,11 +16,12 @@ export class DocenteNotas implements OnInit {
   evaluaciones: any[] = [];
   notas: any = {};
   loading = true;
-  saving = false;
+  savingCell: string | null = null;
 
   constructor(
     private route: ActivatedRoute,
     private api: ApiService,
+    private auth: AuthService,
     private toast: ToastService,
     private cdr: ChangeDetectorRef
   ) {}
@@ -31,23 +34,36 @@ export class DocenteNotas implements OnInit {
 
   loadData(cursoId: number): void {
     this.loading = true;
-    this.api.cursos.obtener(cursoId).subscribe({
-      next: (data: any) => {
-        this.curso = data;
-      }
+    const user = this.auth.user();
+    if (!user?.idPerfil) { this.loading = false; this.cdr.detectChanges(); return; }
+    this.api.docentePanel.obtenerMiFicha().subscribe({
+      next: (docente: any) => {
+        if (!docente?.idDocente) { this.loading = false; this.cdr.detectChanges(); return; }
+        this.api.docentePanel.listarMisCursos(docente.idDocente).subscribe({
+          next: (cursos: any) => {
+            const curso = (cursos || []).find((c: any) => c.idCurso === cursoId);
+            this.curso = curso;
+            this.cargarDatosCurso(cursoId);
+          },
+          error: () => { this.loading = false; this.cdr.detectChanges(); }
+        });
+      },
+      error: () => { this.loading = false; this.cdr.detectChanges(); }
     });
-    this.api.matriculasListarPorCurso(cursoId).subscribe({
-      next: (data: any) => {
-        this.matriculas = (data || []).filter((m: any) => m.estado === 'ACTIVO');
-      }
-    });
-    this.api.periodoActivo.obtener().subscribe({
-      next: (periodo: any) => {
+  }
+
+  private cargarDatosCurso(cursoId: number): void {
+    forkJoin({
+      matriculas: this.api.matriculasListarPorCurso(cursoId),
+      periodo: this.api.periodoActivo.obtener(),
+    }).subscribe({
+      next: ({ matriculas, periodo }: any) => {
+        this.matriculas = (matriculas || []).filter((m: any) => m.estado === 'ACTIVO');
         if (periodo?.idPeriodo) {
           this.api.evaluacionesListarPorPeriodo(periodo.idPeriodo).subscribe({
             next: (evaluaciones: any) => {
               this.evaluaciones = evaluaciones || [];
-              this.cargarNotasExistentes(cursoId);
+              this.cargarNotasExistentes();
             },
             error: () => { this.loading = false; this.cdr.detectChanges(); }
           });
@@ -60,66 +76,116 @@ export class DocenteNotas implements OnInit {
     });
   }
 
-  cargarNotasExistentes(cursoId: number): void {
+  cargarNotasExistentes(): void {
     if (this.matriculas.length === 0 || this.evaluaciones.length === 0) {
       this.loading = false;
       this.cdr.detectChanges();
       return;
     }
-    let pendientes = this.matriculas.length * this.evaluaciones.length;
-    for (const m of this.matriculas) {
-      for (const e of this.evaluaciones) {
-        this.api.notas.listarPorMatricula(m.idMatricula).subscribe({
-          next: (notas: any) => {
-            const nota = (notas || []).find((n: any) => n.evaluacion?.idEvaluacion === e.idEvaluacion);
+    const observables = this.matriculas.map(m =>
+      this.api.notas.listarPorMatricula(m.idMatricula)
+    );
+    forkJoin(observables).subscribe({
+      next: (results: any) => {
+        for (let i = 0; i < results.length; i++) {
+          const m = this.matriculas[i];
+          const notasList = results[i] || [];
+          for (const e of this.evaluaciones) {
+            const nota = notasList.find((n: any) => n.evaluacionPeriodo?.idEvaluacion === e.idEvaluacion);
             if (nota) {
               this.notas[`${m.idMatricula}_${e.idEvaluacion}`] = {
                 valor: nota.valor,
+                observacion: nota.observacion || '',
                 idNota: nota.idNota,
                 matriculaId: m.idMatricula,
                 evaluacionId: e.idEvaluacion
               };
             }
-            pendientes--;
-            if (pendientes <= 0) { this.loading = false; this.cdr.detectChanges(); }
-          },
-          error: () => {
-            pendientes--;
-            if (pendientes <= 0) { this.loading = false; this.cdr.detectChanges(); }
           }
-        });
-      }
-    }
+        }
+        this.loading = false;
+        this.cdr.detectChanges();
+      },
+      error: () => { this.loading = false; this.cdr.detectChanges(); }
+    });
   }
 
-  getValue(matriculaId: number, evaluacionId: number): string {
+  getValor(matriculaId: number, evaluacionId: number): string {
     return this.notas[`${matriculaId}_${evaluacionId}`]?.valor ?? '';
   }
 
-  setValue(matriculaId: number, evaluacionId: number, valor: string): void {
-    this.notas[`${matriculaId}_${evaluacionId}`] = { ...this.notas[`${matriculaId}_${evaluacionId}`], valor, matriculaId, evaluacionId };
+  getObservacion(matriculaId: number, evaluacionId: number): string {
+    return this.notas[`${matriculaId}_${evaluacionId}`]?.observacion ?? '';
+  }
+
+  setValor(matriculaId: number, evaluacionId: number, valor: string): void {
+    if (valor === '') {
+      this.notas[`${matriculaId}_${evaluacionId}`] = {
+        ...(this.notas[`${matriculaId}_${evaluacionId}`] || {}),
+        valor,
+        matriculaId,
+        evaluacionId
+      };
+      return;
+    }
+    const num = Number(valor);
+    if (isNaN(num) || num < 0 || num > 20) {
+      this.toast.warning('La nota debe estar entre 0 y 20.');
+      return;
+    }
+    this.notas[`${matriculaId}_${evaluacionId}`] = {
+      ...(this.notas[`${matriculaId}_${evaluacionId}`] || {}),
+      valor,
+      matriculaId,
+      evaluacionId
+    };
+  }
+
+  setObservacion(matriculaId: number, evaluacionId: number, observacion: string): void {
+    this.notas[`${matriculaId}_${evaluacionId}`] = {
+      ...(this.notas[`${matriculaId}_${evaluacionId}`] || {}),
+      observacion,
+      matriculaId,
+      evaluacionId
+    };
   }
 
   guardarNota(matriculaId: number, evaluacionId: number): void {
     const entry = this.notas[`${matriculaId}_${evaluacionId}`];
     if (!entry || entry.valor === '' || entry.valor === undefined) return;
-    this.saving = true;
-    const payload = { matricula: { idMatricula: matriculaId }, evaluacion: { idEvaluacion: evaluacionId }, valor: Number(entry.valor) };
+    const num = Number(entry.valor);
+    if (isNaN(num) || num < 0 || num > 20) {
+      this.toast.warning('La nota debe estar entre 0 y 20.');
+      return;
+    }
+    const cellKey = `${matriculaId}_${evaluacionId}`;
+    this.savingCell = cellKey;
+    const payload = {
+      matricula: { idMatricula: matriculaId },
+      evaluacionPeriodo: { idEvaluacion: evaluacionId },
+      valor: Number(entry.valor),
+      observacion: entry.observacion || '',
+    };
     if (entry.idNota) {
       this.api.notas.actualizar(entry.idNota, payload).subscribe({
-        next: () => { this.saving = false; this.toast.success('Nota actualizada.'); },
-        error: (err: any) => { this.saving = false; this.toast.error(err.friendlyMessage || 'Error al guardar.'); }
+        next: () => { this.savingCell = null; this.cdr.detectChanges(); this.toast.success('Nota actualizada.'); },
+        error: (err: any) => { this.savingCell = null; this.cdr.detectChanges(); this.toast.error(err.friendlyMessage || 'Error al guardar.'); }
       });
     } else {
       this.api.notas.crear(payload).subscribe({
         next: (res: any) => {
-          this.notas[`${matriculaId}_${evaluacionId}`].idNota = res.idNota;
-          this.saving = false;
+          this.notas[cellKey].idNota = res.idNota;
+          this.savingCell = null;
+          this.cdr.detectChanges();
           this.toast.success('Nota guardada.');
         },
-        error: (err: any) => { this.saving = false; this.toast.error(err.friendlyMessage || 'Error al guardar.'); }
+        error: (err: any) => { this.savingCell = null; this.cdr.detectChanges(); this.toast.error(err.friendlyMessage || 'Error al guardar.'); }
       });
     }
+  }
+
+  isSaving(matriculaId: number, evaluacionId: number): boolean {
+    return this.savingCell === `${matriculaId}_${evaluacionId}`;
   }
 
   tieneCambios(): boolean { return false; }

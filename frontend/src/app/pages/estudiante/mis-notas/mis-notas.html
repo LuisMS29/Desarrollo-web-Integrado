@@ -23,13 +23,15 @@
                 <tr>
                   <th>Evaluación</th>
                   <th class="text-center">Nota</th>
+                  <th class="text-center">Observación</th>
                 </tr>
               </thead>
               <tbody>
                 @for (n of getNotas(m.idMatricula); track n.idNota) {
                   <tr>
-                    <td>{{ n.evaluacion?.nombre || '—' }}</td>
+                    <td>{{ n.evaluacionPeriodo?.nombre || '—' }}</td>
                     <td class="text-center fw-semibold">{{ n.valor }}</td>
+                    <td class="text-secondary small">{{ n.observacion || '—' }}</td>
                   </tr>
                 }
               </tbody>

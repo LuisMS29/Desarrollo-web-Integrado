@@ -49,11 +49,19 @@ export class EstudianteMiAsistencia implements OnInit {
             this.asistencias.push({ ...a, curso: m.curso });
           }
           pendientes--;
-          if (pendientes <= 0) { this.loading = false; this.cdr.detectChanges(); }
+          if (pendientes <= 0) {
+            this.asistencias.sort((a: any, b: any) => new Date(b.fecha).getTime() - new Date(a.fecha).getTime());
+            this.loading = false;
+            this.cdr.detectChanges();
+          }
         },
         error: () => {
           pendientes--;
-          if (pendientes <= 0) { this.loading = false; this.cdr.detectChanges(); }
+          if (pendientes <= 0) {
+            this.asistencias.sort((a: any, b: any) => new Date(b.fecha).getTime() - new Date(a.fecha).getTime());
+            this.loading = false;
+            this.cdr.detectChanges();
+          }
         }
       });
     }
@@ -61,16 +69,24 @@ export class EstudianteMiAsistencia implements OnInit {
 
   get porcentaje(): number {
     if (this.asistencias.length === 0) return 0;
-    const presentes = this.asistencias.filter(a => a.presente).length;
+    const presentes = this.asistencias.filter(a => a.estado === 'PRESENTE').length;
     return Math.round((presentes / this.asistencias.length) * 100);
   }
 
   get presentes(): number {
-    return this.asistencias.filter(a => a.presente).length;
+    return this.asistencias.filter(a => a.estado === 'PRESENTE').length;
   }
 
   get ausentes(): number {
-    return this.asistencias.filter(a => !a.presente).length;
+    return this.asistencias.filter(a => a.estado === 'AUSENTE').length;
+  }
+
+  get tardanzas(): number {
+    return this.asistencias.filter(a => a.estado === 'TARDANZA').length;
+  }
+
+  get justificados(): number {
+    return this.asistencias.filter(a => a.estado === 'JUSTIFICADO').length;
   }
 
   get agrupadasPorCurso(): any[] {
@@ -84,6 +100,6 @@ export class EstudianteMiAsistencia implements OnInit {
   }
 
   presentesCount(asistencias: any[]): number {
-    return asistencias.filter((x: any) => x.presente).length;
+    return asistencias.filter((x: any) => x.estado === 'PRESENTE').length;
   }
 }

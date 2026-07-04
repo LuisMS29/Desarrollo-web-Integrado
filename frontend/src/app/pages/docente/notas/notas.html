@@ -23,7 +23,7 @@
             <tr>
               <th style="min-width:200px;">Estudiante</th>
               @for (e of evaluaciones; track e.idEvaluacion) {
-                <th class="text-center" style="min-width:100px;">{{ e.nombre }}</th>
+                <th class="text-center" style="min-width:140px;">{{ e.nombre }}</th>
               }
             </tr>
           </thead>
@@ -32,11 +32,27 @@
               <tr>
                 <td>{{ m.estudiante?.nombres }} {{ m.estudiante?.apellidos }}</td>
                 @for (e of evaluaciones; track e.idEvaluacion) {
-                  <td class="text-center">
-                    <input type="number" class="form-control form-control-sm text-center" style="width:80px;display:inline;"
-                      [value]="getValue(m.idMatricula, e.idEvaluacion)"
-                      (input)="setValue(m.idMatricula, e.idEvaluacion, $any($event.target).value)"
-                      (blur)="guardarNota(m.idMatricula, e.idEvaluacion)" />
+                  <td class="text-center align-middle" style="min-width:140px;">
+                    <div class="d-flex align-items-center gap-1 justify-content-center">
+                      <input type="number" step="0.1" min="0" max="20" class="form-control form-control-sm text-center"
+                        style="width:70px;" [value]="getValor(m.idMatricula, e.idEvaluacion)"
+                        (input)="setValor(m.idMatricula, e.idEvaluacion, $any($event.target).value)" />
+                      <button class="btn btn-sm btn-outline-primary"
+                        [disabled]="isSaving(m.idMatricula, e.idEvaluacion)"
+                        (click)="guardarNota(m.idMatricula, e.idEvaluacion)">
+                        @if (isSaving(m.idMatricula, e.idEvaluacion)) {
+                          <span class="spinner-border spinner-border-sm"></span>
+                        } @else {
+                          {{ getValor(m.idMatricula, e.idEvaluacion) ? 'Actualizar' : 'Guardar' }}
+                        }
+                      </button>
+                    </div>
+                    <div class="mt-1">
+                      <input type="text" class="form-control form-control-sm" placeholder="Observación"
+                        style="width:130px;font-size:0.75rem;" [value]="getObservacion(m.idMatricula, e.idEvaluacion)"
+                        (input)="setObservacion(m.idMatricula, e.idEvaluacion, $any($event.target).value)"
+                        (blur)="guardarNota(m.idMatricula, e.idEvaluacion)" />
+                    </div>
                   </td>
                 }
               </tr>

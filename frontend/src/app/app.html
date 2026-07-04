@@ -1,3 +1,23 @@
 <router-outlet />
-<div id="toast-container" class="toast-container position-fixed top-0 end-0 p-3" style="z-index: 9999;">
+<div class="toast-container position-fixed top-0 end-0 p-3" style="z-index: 9999;">
+  @for (t of toastService.toastsSignal(); track t.id) {
+    <div class="toast show align-items-center border-0 mb-2"
+      [class.bg-success]="t.type === 'success'"
+      [class.bg-danger]="t.type === 'error'"
+      [class.bg-warning]="t.type === 'warning'"
+      [class.bg-info]="t.type === 'info'"
+      [class.text-white]="t.type === 'success' || t.type === 'error'"
+      [class.text-dark]="t.type === 'warning' || t.type === 'info'">
+      <div class="d-flex">
+        <div class="toast-body">
+          @if (t.type === 'success') { &#10003; }
+          @else if (t.type === 'error') { &#10007; }
+          @else if (t.type === 'warning') { &#9888; }
+          @else { &#8505; }
+          {{ t.message }}
+        </div>
+        <button type="button" class="btn-close btn-close-white me-2 m-auto" (click)="toastService.remove(t.id)"></button>
+      </div>
+    </div>
+  }
 </div>

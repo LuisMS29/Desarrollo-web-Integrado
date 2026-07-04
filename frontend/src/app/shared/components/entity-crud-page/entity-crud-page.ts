@@ -63,14 +63,9 @@ export class EntityCrudPage implements OnInit {
   constructor(private toast: ToastService, private cdr: ChangeDetectorRef) {}
 
   ngOnInit(): void {
-    console.log('[DEBUG] EntityCrudPage.ngOnInit', this.api);
     this.sortField = this.defaultSort;
     this.load();
     this.loadRelations();
-  }
-
-  ngAfterViewInit(): void {
-    console.log('[DEBUG] EntityCrudPage.ngAfterViewInit', { loading: this.loading, api: !!this.api });
   }
 
   private loadRelations(): void {

@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { ApiService } from '../../../core/services/api.service';
 import { AuthService } from '../../../core/services/auth.service';
 
@@ -12,7 +12,7 @@ export class EstudianteMiAsistencia implements OnInit {
   asistencias: any[] = [];
   loading = true;
 
-  constructor(private api: ApiService, private auth: AuthService) {}
+  constructor(private api: ApiService, private auth: AuthService, private cdr: ChangeDetectorRef) {}
 
   ngOnInit(): void {
     this.loadData();
@@ -26,16 +26,17 @@ export class EstudianteMiAsistencia implements OnInit {
           this.api.estudiantePanel.listarMisMatriculas(data.idEstudiante).subscribe({
             next: (matriculas: any) => {
               const activas = (matriculas || []).filter((m: any) => m.estado === 'ACTIVO');
-              if (activas.length === 0) { this.loading = false; return; }
+              if (activas.length === 0) { this.loading = false; this.cdr.detectChanges(); return; }
               this.cargarAsistencias(activas);
             },
-            error: () => this.loading = false
+            error: () => { this.loading = false; this.cdr.detectChanges(); }
           });
         } else {
           this.loading = false;
+          this.cdr.detectChanges();
         }
       },
-      error: () => this.loading = false
+      error: () => { this.loading = false; this.cdr.detectChanges(); }
     });
   }
 
@@ -48,11 +49,11 @@ export class EstudianteMiAsistencia implements OnInit {
             this.asistencias.push({ ...a, curso: m.curso });
           }
           pendientes--;
-          if (pendientes <= 0) this.loading = false;
+          if (pendientes <= 0) { this.loading = false; this.cdr.detectChanges(); }
         },
         error: () => {
           pendientes--;
-          if (pendientes <= 0) this.loading = false;
+          if (pendientes <= 0) { this.loading = false; this.cdr.detectChanges(); }
         }
       });
     }

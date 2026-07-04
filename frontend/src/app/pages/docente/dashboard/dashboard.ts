@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { ApiService } from '../../../core/services/api.service';
 import { AuthService } from '../../../core/services/auth.service';
 
@@ -14,7 +14,7 @@ export class DocenteDashboard implements OnInit {
   loading = true;
   loadingEst = true;
 
-  constructor(private api: ApiService, private auth: AuthService) {}
+  constructor(private api: ApiService, private auth: AuthService, private cdr: ChangeDetectorRef) {}
 
   ngOnInit(): void {
     this.api.docentePanel.obtenerMiFicha().subscribe({
@@ -25,20 +25,22 @@ export class DocenteDashboard implements OnInit {
             next: (cursos: any) => {
               this.cursos = cursos;
               this.loading = false;
+              this.cdr.detectChanges();
               this.loadEstudiantes(cursos);
             },
-            error: () => this.loading = false
+            error: () => { this.loading = false; this.cdr.detectChanges(); }
           });
         } else {
           this.loading = false;
+          this.cdr.detectChanges();
         }
       },
-      error: () => this.loading = false
+      error: () => { this.loading = false; this.cdr.detectChanges(); }
     });
   }
 
   private loadEstudiantes(cursos: any[]): void {
-    if (cursos.length === 0) { this.loadingEst = false; return; }
+    if (cursos.length === 0) { this.loadingEst = false; this.cdr.detectChanges(); return; }
     Promise.allSettled(cursos.map((c: any) => new Promise(res => this.api.matriculasListarPorCurso(c.idCurso).subscribe({ next: (d: any) => res(d), error: () => res([]) }))))
       .then(results => {
         this.estudiantesPorCurso = results.map((r: any, idx) => ({
@@ -46,6 +48,7 @@ export class DocenteDashboard implements OnInit {
           count: r.status === 'fulfilled' ? (r.value || []).filter((m: any) => m.estado === 'ACTIVO').length : 0,
         }));
         this.loadingEst = false;
+        this.cdr.detectChanges();
       });
   }
 

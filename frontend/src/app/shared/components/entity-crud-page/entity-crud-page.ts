@@ -1,4 +1,4 @@
-import { Component, Input, OnInit } from '@angular/core';
+import { Component, Input, OnInit, ChangeDetectorRef } from '@angular/core';
 import { ToastService } from '../../../core/services/toast.service';
 
 export interface ColumnConfig {
@@ -60,12 +60,17 @@ export class EntityCrudPage implements OnInit {
   deleteTarget: any = null;
   deleteLoading = false;
 
-  constructor(private toast: ToastService) {}
+  constructor(private toast: ToastService, private cdr: ChangeDetectorRef) {}
 
   ngOnInit(): void {
+    console.log('[DEBUG] EntityCrudPage.ngOnInit', this.api);
     this.sortField = this.defaultSort;
     this.load();
     this.loadRelations();
+  }
+
+  ngAfterViewInit(): void {
+    console.log('[DEBUG] EntityCrudPage.ngAfterViewInit', { loading: this.loading, api: !!this.api });
   }
 
   private loadRelations(): void {
@@ -97,10 +102,12 @@ export class EntityCrudPage implements OnInit {
         this.rows = data;
         this.applyFilter();
         this.loading = false;
+        this.cdr.detectChanges();
       },
       error: (err: any) => {
         this.error = err.friendlyMessage || 'No se pudo cargar la información.';
         this.loading = false;
+        this.cdr.detectChanges();
       }
     });
   }

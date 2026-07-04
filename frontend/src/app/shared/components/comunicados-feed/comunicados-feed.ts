@@ -1,4 +1,4 @@
-import { Component, Input, OnChanges, SimpleChanges } from '@angular/core';
+import { ChangeDetectorRef, Component, Input, OnChanges, SimpleChanges } from '@angular/core';
 import { ApiService } from '../../../core/services/api.service';
 
 @Component({
@@ -15,7 +15,7 @@ export class ComunicadosFeed implements OnChanges {
   error = '';
   search = '';
 
-  constructor(private api: ApiService) {}
+  constructor(private api: ApiService, private cdr: ChangeDetectorRef) {}
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['rolActual'] || changes['key']) {
@@ -34,10 +34,12 @@ export class ComunicadosFeed implements OnChanges {
           .sort((a: any, b: any) => new Date(b.fechaPublicacion).getTime() - new Date(a.fechaPublicacion).getTime());
         this.applyFilter();
         this.loading = false;
+        this.cdr.detectChanges();
       },
       error: (err: any) => {
         this.error = err.friendlyMessage || 'No se pudieron cargar los comunicados.';
         this.loading = false;
+        this.cdr.detectChanges();
       }
     });
   }

@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { ApiService } from '../../../core/services/api.service';
 import { AuthService } from '../../../core/services/auth.service';
 
@@ -13,7 +13,7 @@ export class EstudianteMiHorario implements OnInit {
   loading = true;
   dias = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
 
-  constructor(private api: ApiService, private auth: AuthService) {}
+  constructor(private api: ApiService, private auth: AuthService, private cdr: ChangeDetectorRef) {}
 
   ngOnInit(): void {
     this.loadData();
@@ -21,12 +21,12 @@ export class EstudianteMiHorario implements OnInit {
 
   loadData(): void {
     const user = this.auth.user();
-    if (!user?.idPerfil) { this.loading = false; return; }
+    if (!user?.idPerfil) { this.loading = false; this.cdr.detectChanges(); return; }
 
     this.api.estudiantePanel.listarMisMatriculas(user.idPerfil).subscribe({
       next: (data: any) => {
         this.matriculas = (data || []).filter((m: any) => m.estado === 'ACTIVO');
-        if (this.matriculas.length === 0) { this.loading = false; return; }
+        if (this.matriculas.length === 0) { this.loading = false; this.cdr.detectChanges(); return; }
         Promise.allSettled(this.matriculas.map((m: any) => new Promise(res => this.api.horariosListarPorCurso(m.curso.idCurso).subscribe({ next: (d: any) => res({ matricula: m, horarios: d }), error: () => res({ matricula: m, horarios: [] }) }))))
           .then((results: any) => {
             this.horarios = [];
@@ -38,9 +38,10 @@ export class EstudianteMiHorario implements OnInit {
               }
             }
             this.loading = false;
+            this.cdr.detectChanges();
           });
       },
-      error: () => this.loading = false
+      error: () => { this.loading = false; this.cdr.detectChanges(); }
     });
   }
 

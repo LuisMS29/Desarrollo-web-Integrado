@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { ApiService } from '../../../core/services/api.service';
 import { ToastService } from '../../../core/services/toast.service';
@@ -21,13 +21,14 @@ export class DocenteAsistencia implements OnInit {
   constructor(
     private route: ActivatedRoute,
     private api: ApiService,
-    private toast: ToastService
+    private toast: ToastService,
+    private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
     const cursoId = Number(this.route.snapshot.paramMap.get('cursoId'));
     if (cursoId) this.loadData(cursoId);
-    else this.loading = false;
+    else { this.loading = false; this.cdr.detectChanges(); }
   }
 
   get monthLabel(): string {
@@ -46,7 +47,7 @@ export class DocenteAsistencia implements OnInit {
         this.generarDias();
         this.cargarAsistenciasExistentes(cursoId);
       },
-      error: () => { this.loading = false; }
+      error: () => { this.loading = false; this.cdr.detectChanges(); }
     });
   }
 
@@ -60,7 +61,7 @@ export class DocenteAsistencia implements OnInit {
   }
 
   cargarAsistenciasExistentes(cursoId: number): void {
-    if (this.matriculas.length === 0) { this.loading = false; return; }
+    if (this.matriculas.length === 0) { this.loading = false; this.cdr.detectChanges(); return; }
     let pendientes = this.matriculas.length;
     for (const m of this.matriculas) {
       this.api.asistencias.listarPorMatricula(m.idMatricula).subscribe({
@@ -73,11 +74,11 @@ export class DocenteAsistencia implements OnInit {
             }
           }
           pendientes--;
-          if (pendientes <= 0) this.loading = false;
+          if (pendientes <= 0) { this.loading = false; this.cdr.detectChanges(); }
         },
         error: () => {
           pendientes--;
-          if (pendientes <= 0) this.loading = false;
+          if (pendientes <= 0) { this.loading = false; this.cdr.detectChanges(); }
         }
       });
     }

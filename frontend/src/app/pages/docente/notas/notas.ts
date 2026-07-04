@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { ApiService } from '../../../core/services/api.service';
 import { ToastService } from '../../../core/services/toast.service';
@@ -19,13 +19,14 @@ export class DocenteNotas implements OnInit {
   constructor(
     private route: ActivatedRoute,
     private api: ApiService,
-    private toast: ToastService
+    private toast: ToastService,
+    private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
     const cursoId = Number(this.route.snapshot.paramMap.get('cursoId'));
     if (cursoId) this.loadData(cursoId);
-    else this.loading = false;
+    else { this.loading = false; this.cdr.detectChanges(); }
   }
 
   loadData(cursoId: number): void {
@@ -48,19 +49,21 @@ export class DocenteNotas implements OnInit {
               this.evaluaciones = evaluaciones || [];
               this.cargarNotasExistentes(cursoId);
             },
-            error: () => { this.loading = false; }
+            error: () => { this.loading = false; this.cdr.detectChanges(); }
           });
         } else {
           this.loading = false;
+          this.cdr.detectChanges();
         }
       },
-      error: () => { this.loading = false; }
+      error: () => { this.loading = false; this.cdr.detectChanges(); }
     });
   }
 
   cargarNotasExistentes(cursoId: number): void {
     if (this.matriculas.length === 0 || this.evaluaciones.length === 0) {
       this.loading = false;
+      this.cdr.detectChanges();
       return;
     }
     let pendientes = this.matriculas.length * this.evaluaciones.length;
@@ -78,11 +81,11 @@ export class DocenteNotas implements OnInit {
               };
             }
             pendientes--;
-            if (pendientes <= 0) this.loading = false;
+            if (pendientes <= 0) { this.loading = false; this.cdr.detectChanges(); }
           },
           error: () => {
             pendientes--;
-            if (pendientes <= 0) this.loading = false;
+            if (pendientes <= 0) { this.loading = false; this.cdr.detectChanges(); }
           }
         });
       }

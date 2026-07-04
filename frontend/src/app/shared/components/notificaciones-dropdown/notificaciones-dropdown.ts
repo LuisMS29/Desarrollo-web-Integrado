@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { ChangeDetectorRef, Component, OnInit, OnDestroy } from '@angular/core';
 import { AuthService } from '../../../core/services/auth.service';
 import { ApiService } from '../../../core/services/api.service';
 
@@ -15,7 +15,8 @@ export class NotificacionesDropdown implements OnInit, OnDestroy {
 
   constructor(
     private auth: AuthService,
-    private api: ApiService
+    private api: ApiService,
+    private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
@@ -31,10 +32,10 @@ export class NotificacionesDropdown implements OnInit, OnDestroy {
     const user = this.auth.user();
     if (!user) return;
     this.api.notificaciones.listarNoLeidas(user.idUsuario).subscribe({
-      next: (data: any) => { this.noLeidas = data.length || 0; },
+      next: (data: any) => { this.noLeidas = data.length || 0; this.cdr.detectChanges(); },
     });
     this.api.notificaciones.listarPorUsuario(user.idUsuario).subscribe({
-      next: (data: any) => { this.notificaciones = data; },
+      next: (data: any) => { this.notificaciones = data; this.cdr.detectChanges(); },
     });
   }
 

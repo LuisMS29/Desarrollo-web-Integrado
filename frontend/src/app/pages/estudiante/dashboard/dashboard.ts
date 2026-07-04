@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { ApiService } from '../../../core/services/api.service';
 import { AuthService } from '../../../core/services/auth.service';
 
@@ -12,7 +12,7 @@ export class EstudianteDashboard implements OnInit {
   matriculas: any[] = [];
   loading = true;
 
-  constructor(private api: ApiService, private auth: AuthService) {}
+  constructor(private api: ApiService, private auth: AuthService, private cdr: ChangeDetectorRef) {}
 
   ngOnInit(): void {
     this.api.estudiantePanel.obtenerMiFicha().subscribe({
@@ -20,14 +20,15 @@ export class EstudianteDashboard implements OnInit {
         this.estudiante = data;
         if (data?.idEstudiante) {
           this.api.estudiantePanel.listarMisMatriculas(data.idEstudiante).subscribe({
-            next: (mat: any) => { this.matriculas = mat; this.loading = false; },
-            error: () => this.loading = false
+            next: (mat: any) => { this.matriculas = mat; this.loading = false; this.cdr.detectChanges(); },
+            error: () => { this.loading = false; this.cdr.detectChanges(); }
           });
         } else {
           this.loading = false;
+          this.cdr.detectChanges();
         }
       },
-      error: () => this.loading = false
+      error: () => { this.loading = false; this.cdr.detectChanges(); }
     });
   }
 

@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { ApiService } from '../../../core/services/api.service';
 import { AuthService } from '../../../core/services/auth.service';
 
@@ -13,7 +13,7 @@ export class DocenteMiHorario implements OnInit {
   loading = true;
   dias = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
 
-  constructor(private api: ApiService, private auth: AuthService) {}
+  constructor(private api: ApiService, private auth: AuthService, private cdr: ChangeDetectorRef) {}
 
   ngOnInit(): void {
     this.loadData();
@@ -26,7 +26,7 @@ export class DocenteMiHorario implements OnInit {
         if (data?.idDocente) {
           this.api.docentePanel.listarMisCursos(data.idDocente).subscribe({
             next: (cursos: any) => {
-              if (cursos.length === 0) { this.loading = false; return; }
+              if (cursos.length === 0) { this.loading = false; this.cdr.detectChanges(); return; }
               Promise.allSettled(cursos.map((c: any) => new Promise(res => this.api.horariosListarPorCurso(c.idCurso).subscribe({ next: (d: any) => res({ curso: c, horarios: d }), error: () => res({ curso: c, horarios: [] }) }))))
                 .then((results: any) => {
                   this.horarios = [];
@@ -38,15 +38,17 @@ export class DocenteMiHorario implements OnInit {
                     }
                   }
                   this.loading = false;
+                  this.cdr.detectChanges();
                 });
             },
-            error: () => this.loading = false
+            error: () => { this.loading = false; this.cdr.detectChanges(); }
           });
         } else {
           this.loading = false;
+          this.cdr.detectChanges();
         }
       },
-      error: () => this.loading = false
+      error: () => { this.loading = false; this.cdr.detectChanges(); }
     });
   }
 

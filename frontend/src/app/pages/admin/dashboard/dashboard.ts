@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { ApiService } from '../../../core/services/api.service';
 
 @Component({
@@ -21,7 +21,7 @@ export class AdminDashboard implements OnInit {
     { key: 'comunicados', label: 'Comunicados', accent: '#7a4e9e', link: '/admin/comunicados' },
   ];
 
-  constructor(private api: ApiService) {}
+  constructor(private api: ApiService, private cdr: ChangeDetectorRef) {}
 
   ngOnInit(): void {
     this.loadData();
@@ -64,6 +64,7 @@ export class AdminDashboard implements OnInit {
         this.totalRoles = this.roleCounts.reduce((s, r) => s + r.count, 0);
         this.failedResources = failed;
         this.loading = false;
+        this.cdr.detectChanges();
       });
   }
 

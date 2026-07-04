@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { ApiService } from '../../../core/services/api.service';
 import { ToastService } from '../../../core/services/toast.service';
 
@@ -25,7 +25,7 @@ export class AdminUsuarios implements OnInit {
 
   roles = ['ADMIN', 'DIRECTOR', 'DOCENTE', 'ESTUDIANTE'];
 
-  constructor(private api: ApiService, private toast: ToastService) {}
+  constructor(private api: ApiService, private toast: ToastService, private cdr: ChangeDetectorRef) {}
 
   ngOnInit(): void {
     this.load();
@@ -38,10 +38,12 @@ export class AdminUsuarios implements OnInit {
         this.usuarios = data;
         this.applyFilter();
         this.loading = false;
+        this.cdr.detectChanges();
       },
       error: (err: any) => {
         this.error = err.friendlyMessage || 'No se pudo cargar.';
         this.loading = false;
+        this.cdr.detectChanges();
       }
     });
   }

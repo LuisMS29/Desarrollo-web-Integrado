@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { ApiService } from '../../../core/services/api.service';
 
 @Component({
@@ -20,7 +20,7 @@ export class DirectorDashboard implements OnInit {
     { key: 'comunicados', label: 'Comunicados', accent: '#7a4e9e', link: '/director/comunicados' },
   ];
 
-  constructor(private api: ApiService) {}
+  constructor(private api: ApiService, private cdr: ChangeDetectorRef) {}
 
   ngOnInit(): void {
     this.loadData();
@@ -45,6 +45,7 @@ export class DirectorDashboard implements OnInit {
       };
       this.periodoActivo = periodo;
       this.loading = false;
+      this.cdr.detectChanges();
     });
   }
 

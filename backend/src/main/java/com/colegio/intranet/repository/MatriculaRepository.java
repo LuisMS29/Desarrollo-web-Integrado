@@ -10,4 +10,5 @@ import java.util.List;
 public interface MatriculaRepository extends JpaRepository<Matricula, Integer> {
     List<Matricula> findByEstudianteIdEstudiante(Integer estudianteId);
     List<Matricula> findByCursoIdCurso(Integer cursoId);
+    long countByCursoIdCurso(Integer cursoId);
 }

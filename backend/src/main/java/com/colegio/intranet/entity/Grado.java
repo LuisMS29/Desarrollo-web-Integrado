@@ -28,6 +28,6 @@ public class Grado {
     private Integer orden;
 
     public enum Nivel {
-        PRIMARIA
+        PRIMARIA, SECUNDARIA
     }
 }

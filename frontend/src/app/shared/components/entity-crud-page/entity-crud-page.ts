@@ -59,6 +59,8 @@ export class EntityCrudPage implements OnInit {
 
   deleteTarget: any = null;
   deleteLoading = false;
+  alertMessage = '';
+  alertTitle = '';
 
   constructor(private toast: ToastService, private cdr: ChangeDetectorRef) {}
 
@@ -177,8 +179,10 @@ export class EntityCrudPage implements OnInit {
         this.saving = false;
       },
       error: (err: any) => {
-        this.toast.error(err.friendlyMessage || 'No se pudo guardar.');
+        this.alertTitle = 'No se pudo guardar';
+        this.alertMessage = err.error?.message || err.friendlyMessage || 'Ocurrió un error al intentar guardar.';
         this.saving = false;
+        this.cdr.detectChanges();
       }
     });
   }
@@ -198,8 +202,11 @@ export class EntityCrudPage implements OnInit {
         this.deleteLoading = false;
       },
       error: (err: any) => {
-        this.toast.error(err.friendlyMessage || 'No se pudo eliminar.');
+        this.alertTitle = 'No se pudo eliminar';
+        this.alertMessage = err.error?.message || err.friendlyMessage || 'Ocurrió un error al intentar eliminar.';
+        this.deleteTarget = null;
         this.deleteLoading = false;
+        this.cdr.detectChanges();
       }
     });
   }

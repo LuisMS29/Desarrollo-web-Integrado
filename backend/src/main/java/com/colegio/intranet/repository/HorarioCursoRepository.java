@@ -9,4 +9,6 @@ import java.util.List;
 @Repository
 public interface HorarioCursoRepository extends JpaRepository<HorarioCurso, Integer> {
     List<HorarioCurso> findByCursoIdCurso(Integer cursoId);
+    long countByCursoIdCurso(Integer cursoId);
+    void deleteByCursoIdCurso(Integer cursoId);
 }

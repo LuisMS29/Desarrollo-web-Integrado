@@ -136,4 +136,9 @@
 
   <app-confirm-modal [show]="!!deleteTarget" title="Eliminar registro" message="Esta acción no se puede deshacer. ¿Deseas eliminar este registro?"
     confirmLabel="Eliminar" confirmVariant="danger" [loading]="deleteLoading" (confirm)="handleDelete()" (cancel)="deleteTarget = null"></app-confirm-modal>
+
+  @if (alertMessage) {
+    <app-confirm-modal [show]="true" [title]="alertTitle" [message]="alertMessage" confirmLabel="Entendido" confirmVariant="primary"
+      (confirm)="alertMessage = ''; alertTitle = ''" (cancel)="alertMessage = ''; alertTitle = ''"></app-confirm-modal>
+  }
 </div>

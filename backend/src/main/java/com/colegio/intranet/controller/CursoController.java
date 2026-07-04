@@ -1,7 +1,10 @@
 package com.colegio.intranet.controller;
 
+import com.colegio.intranet.dto.MessageResponse;
 import com.colegio.intranet.entity.Curso;
 import com.colegio.intranet.repository.CursoRepository;
+import com.colegio.intranet.repository.MatriculaRepository;
+import com.colegio.intranet.repository.HorarioCursoRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -15,6 +18,8 @@ import java.util.List;
 public class CursoController {
 
     private final CursoRepository cursoRepository;
+    private final MatriculaRepository matriculaRepository;
+    private final HorarioCursoRepository horarioCursoRepository;
 
     @GetMapping("/curso/listar")
     @PreAuthorize("hasAnyRole('ADMIN', 'DIRECTOR', 'DOCENTE', 'ESTUDIANTE')")
@@ -55,7 +60,13 @@ public class CursoController {
 
     @DeleteMapping("/admin/cursos/{id}")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<Void> eliminar(@PathVariable Integer id) {
+    public ResponseEntity<?> eliminar(@PathVariable Integer id) {
+        long matriculas = matriculaRepository.countByCursoIdCurso(id);
+        if (matriculas > 0) {
+            return ResponseEntity.badRequest()
+                    .body(new MessageResponse("No se puede eliminar el curso porque tiene " + matriculas + " matrícula(s) asociada(s). Elimine primero las matrículas."));
+        }
+        horarioCursoRepository.deleteByCursoIdCurso(id);
         cursoRepository.deleteById(id);
         return ResponseEntity.noContent().build();
     }

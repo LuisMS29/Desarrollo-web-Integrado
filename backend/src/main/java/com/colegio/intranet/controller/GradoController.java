@@ -30,14 +30,32 @@ public class GradoController {
 
     @PostMapping("/director/grados")
     @PreAuthorize("hasAnyRole('ADMIN', 'DIRECTOR')")
-    public ResponseEntity<Grado> crear(@RequestBody Grado grado) {
+    public ResponseEntity<?> crear(@RequestBody Grado grado) {
+        if (gradoRepository.existsByNombre(grado.getNombre())) {
+            return ResponseEntity.badRequest()
+                    .body(new com.colegio.intranet.dto.MessageResponse("Ya existe un grado con el nombre \"" + grado.getNombre() + "\""));
+        }
+        if (grado.getOrden() == null) {
+            int maxOrden = gradoRepository.findMaxOrden();
+            grado.setOrden(maxOrden + 1);
+        }
         return ResponseEntity.ok(gradoRepository.save(grado));
     }
 
     @PutMapping("/director/grados/{id}")
     @PreAuthorize("hasAnyRole('ADMIN', 'DIRECTOR')")
-    public ResponseEntity<Grado> actualizar(@PathVariable Integer id, @RequestBody Grado grado) {
+    public ResponseEntity<?> actualizar(@PathVariable Integer id, @RequestBody Grado grado) {
         grado.setIdGrado(id);
+        Grado existente = gradoRepository.findById(id).orElse(null);
+        if (existente != null && !existente.getNombre().equals(grado.getNombre())
+                && gradoRepository.existsByNombre(grado.getNombre())) {
+            return ResponseEntity.badRequest()
+                    .body(new com.colegio.intranet.dto.MessageResponse("Ya existe otro grado con el nombre \"" + grado.getNombre() + "\""));
+        }
+        if (grado.getOrden() == null) {
+            int maxOrden = gradoRepository.findMaxOrden();
+            grado.setOrden(maxOrden + 1);
+        }
         return ResponseEntity.ok(gradoRepository.save(grado));
     }
 

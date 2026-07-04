@@ -1,0 +1,69 @@
+<div>
+  <div class="mb-4">
+    <h1 class="font-display fw-bold h3 mb-1">Mi asistencia</h1>
+    <p class="text-secondary mb-0">Registro de asistencia por curso.</p>
+  </div>
+
+  @if (loading) {
+    <app-loading-state label="Cargando asistencia..."></app-loading-state>
+  } @else if (asistencias.length === 0) {
+    <div class="ie-card p-4 text-center py-5"><p class="text-secondary mb-0">Aún no hay registros de asistencia.</p></div>
+  } @else {
+    <div class="row g-3 mb-4">
+      <div class="col-6 col-lg-4">
+        <div class="ie-stat-card h-100">
+          <div class="accent-bar" style="background:var(--ie-success);"></div>
+          <div class="label">Asistencia total</div>
+          <div class="value">{{ porcentaje }}%</div>
+        </div>
+      </div>
+      <div class="col-6 col-lg-4">
+        <div class="ie-stat-card h-100">
+          <div class="accent-bar" style="background:var(--ie-primary);"></div>
+          <div class="label">Presentes</div>
+          <div class="value">{{ presentes }}</div>
+        </div>
+      </div>
+      <div class="col-6 col-lg-4">
+        <div class="ie-stat-card h-100">
+          <div class="accent-bar" style="background:var(--ie-danger);"></div>
+          <div class="label">Ausentes</div>
+          <div class="value">{{ ausentes }}</div>
+        </div>
+      </div>
+    </div>
+
+    @for (g of agrupadasPorCurso; track g.curso?.idCurso) {
+      <div class="ie-card p-4 mb-3">
+        <h2 class="font-display h5 fw-bold mb-3">{{ g.curso?.asignatura?.nombre || '—' }} · {{ g.curso?.grado?.nombre }}{{ g.curso?.seccion?.nombre }}</h2>
+        <div class="table-responsive">
+          <table class="table ie-table mb-0">
+            <thead>
+              <tr>
+                <th>Fecha</th>
+                <th class="text-center">Estado</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (a of g.asistencias; track a.idAsistencia) {
+                <tr>
+                  <td>{{ a.fecha | date:'dd/MM/yyyy' }}</td>
+                  <td class="text-center">
+                    @if (a.presente) {
+                      <span class="badge bg-success">Presente</span>
+                    } @else {
+                      <span class="badge bg-danger">Ausente</span>
+                    }
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+        <div class="mt-2 small text-end text-secondary">
+          {{ presentesCount(g.asistencias) }}/{{ g.asistencias.length }} presente(s)
+        </div>
+      </div>
+    }
+  }
+</div>

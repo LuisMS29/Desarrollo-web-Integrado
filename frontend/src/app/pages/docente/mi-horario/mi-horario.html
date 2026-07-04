@@ -1,0 +1,44 @@
+<div>
+  <div class="mb-4">
+    <h1 class="font-display fw-bold h3 mb-1">Mi horario</h1>
+    <p class="text-secondary mb-0">
+      @if (docente) { {{ docente.nombres }} {{ docente.apellidos }} · Código {{ docente.codigoDocente }} }
+    </p>
+  </div>
+
+  @if (loading) {
+    <app-loading-state label="Cargando horario..."></app-loading-state>
+  } @else if (horarios.length === 0) {
+    <div class="ie-card p-4 text-center py-5"><p class="text-secondary mb-0">No tienes horarios asignados.</p></div>
+  } @else {
+    <div class="ie-card">
+      <div class="table-responsive">
+        <table class="table ie-table mb-0">
+          <thead>
+            <tr>
+              @for (d of diaColumns; track d) {
+                <th class="text-center">{{ dias[d] }}</th>
+              }
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              @for (d of diaColumns; track d) {
+                <td class="align-top" style="min-width:140px;height:120px;">
+                  @for (h of getHorarioForDay(d); track h.idHorario) {
+                    <div class="border rounded p-2 mb-2 small" style="background:var(--ie-bg-card);">
+                      <div class="fw-semibold">{{ h.curso?.asignatura?.nombre || '—' }}</div>
+                      <div>{{ h.horaInicio }}–{{ h.horaFin }}</div>
+                      @if (h.aula) { <div class="text-secondary">Aula {{ h.aula }}</div> }
+                      <div class="text-secondary">{{ h.curso?.grado?.nombre }}{{ h.curso?.seccion?.nombre }}</div>
+                    </div>
+                  }
+                </td>
+              }
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  }
+</div>

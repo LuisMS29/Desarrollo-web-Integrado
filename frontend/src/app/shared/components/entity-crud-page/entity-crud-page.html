@@ -102,11 +102,15 @@
                       <input type="checkbox" class="form-check-input" [checked]="!!form[f.key]" (change)="handleChange(f, $any($event.target).checked)" [disabled]="saving" />
                     </div>
                   } @else if (f.type === 'select' || f.type === 'relation') {
-                    <select class="form-select" [value]="form[f.key] || ''" (change)="handleChange(f, $any($event.target).value)" [disabled]="saving">
+                    <select class="form-select" [value]="form[f.key] || ''" (change)="handleChange(f, $any($event.target).value)" [disabled]="saving || relationsLoading">
                       <option value="" disabled>Selecciona una opción</option>
                       @if (f.type === 'select') {
                         @for (opt of f.options; track opt.value) {
                           <option [value]="opt.value">{{ opt.label }}</option>
+                        }
+                      } @else if (f.type === 'relation' && relationOptions[f.key]) {
+                        @for (opt of relationOptions[f.key]; track $index) {
+                          <option [value]="opt[f.relation!.idKey]">{{ f.relation!.labelFn(opt) }}</option>
                         }
                       }
                     </select>

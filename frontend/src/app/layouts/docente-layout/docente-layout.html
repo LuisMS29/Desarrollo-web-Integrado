@@ -1,10 +1,11 @@
-<div class="d-flex">
-  <app-sidebar [navItems]="navItems" [open]="sidebarOpen" (close)="sidebarOpen = false"></app-sidebar>
-  <div class="ie-content flex-grow-1">
-    <div class="d-flex align-items-center justify-content-between mb-3 d-md-none">
-      <button class="btn btn-outline-secondary btn-sm" (click)="sidebarOpen = !sidebarOpen">☰ Menú</button>
-      <app-notificaciones-dropdown></app-notificaciones-dropdown>
-    </div>
-    <router-outlet></router-outlet>
+<div class="ie-shell">
+  <app-sidebar [sections]="sections" [open]="sidebarOpen" brandSub="Panel del Docente" (close)="sidebarOpen = false"></app-sidebar>
+  <div class="ie-main">
+    <header class="ie-topbar">
+      <button class="btn btn-sm btn-outline-secondary d-md-none" (click)="sidebarOpen = !sidebarOpen">☰ Menú</button>
+      <div class="fw-semibold text-secondary d-none d-md-block">Bienvenido, {{ auth.user()?.username }}</div>
+      <span class="badge-rol {{ auth.user()?.rol }}">{{ auth.user()?.rol }}</span>
+    </header>
+    <main class="ie-content"><router-outlet></router-outlet></main>
   </div>
 </div>

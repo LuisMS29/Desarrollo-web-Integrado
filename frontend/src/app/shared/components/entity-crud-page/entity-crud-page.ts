@@ -1,5 +1,4 @@
 import { Component, Input, OnInit } from '@angular/core';
-
 import { ToastService } from '../../../core/services/toast.service';
 
 export interface ColumnConfig {
@@ -39,6 +38,7 @@ export class EntityCrudPage implements OnInit {
   @Input() searchFields: string[] = [];
   @Input() sortOptions: { key: string; label: string }[] = [];
   @Input() defaultSort = '';
+  @Input() relationLoaders?: { [key: string]: () => any };
 
   rows: any[] = [];
   filtered: any[] = [];
@@ -55,6 +55,7 @@ export class EntityCrudPage implements OnInit {
   saving = false;
   formError = '';
   relationOptions: any = {};
+  relationsLoading = false;
 
   deleteTarget: any = null;
   deleteLoading = false;
@@ -64,6 +65,28 @@ export class EntityCrudPage implements OnInit {
   ngOnInit(): void {
     this.sortField = this.defaultSort;
     this.load();
+    this.loadRelations();
+  }
+
+  private loadRelations(): void {
+    if (!this.relationLoaders) return;
+    this.relationsLoading = true;
+    const keys = Object.keys(this.relationLoaders);
+    let pending = keys.length;
+    for (const key of keys) {
+      this.relationLoaders[key]().subscribe({
+        next: (data: any) => {
+          this.relationOptions[key] = data || [];
+          pending--;
+          if (pending <= 0) this.relationsLoading = false;
+        },
+        error: () => {
+          this.relationOptions[key] = [];
+          pending--;
+          if (pending <= 0) this.relationsLoading = false;
+        }
+      });
+    }
   }
 
   load(): void {

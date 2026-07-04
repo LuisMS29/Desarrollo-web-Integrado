@@ -1,0 +1,45 @@
+<div>
+  <div class="mb-4">
+    <h1 class="font-display fw-bold h3 mb-1">Mis notas</h1>
+    <p class="text-secondary mb-0">Calificaciones obtenidas en cada curso.</p>
+  </div>
+
+  @if (loading) {
+    <app-loading-state label="Cargando tus notas..."></app-loading-state>
+  } @else if (matriculas.length === 0) {
+    <div class="ie-card p-4 text-center py-5"><p class="text-secondary mb-0">No estás matriculado en ningún curso.</p></div>
+  } @else {
+    @for (m of matriculas; track m.idMatricula) {
+      <div class="ie-card p-4 mb-3">
+        <h2 class="font-display h5 fw-bold mb-1">{{ m.curso?.asignatura?.nombre || '—' }}</h2>
+        <p class="text-secondary small mb-3">{{ m.curso?.grado?.nombre }}{{ m.curso?.seccion?.nombre }} · Docente: {{ m.curso?.docente?.nombres }} {{ m.curso?.docente?.apellidos }}</p>
+
+        @if (getNotas(m.idMatricula).length === 0) {
+          <p class="text-secondary mb-0 small">Aún no hay notas registradas.</p>
+        } @else {
+          <div class="table-responsive">
+            <table class="table ie-table mb-0">
+              <thead>
+                <tr>
+                  <th>Evaluación</th>
+                  <th class="text-center">Nota</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (n of getNotas(m.idMatricula); track n.idNota) {
+                  <tr>
+                    <td>{{ n.evaluacion?.nombre || '—' }}</td>
+                    <td class="text-center fw-semibold">{{ n.valor }}</td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+          <div class="mt-2 text-end fw-bold small">
+            Promedio: {{ promedio(m.idMatricula) | number:'1.1-1' }}
+          </div>
+        }
+      </div>
+    }
+  }
+</div>

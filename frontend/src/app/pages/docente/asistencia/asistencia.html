@@ -1,0 +1,61 @@
+@if (loading) { <app-loading-state label="Cargando asistencia..."></app-loading-state> }
+@else {
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <div>
+      <h1 class="font-display fw-bold h3 mb-1">Asistencia</h1>
+      @if (curso) { <p class="text-secondary mb-0">{{ curso.asignatura?.nombre }} - {{ curso.grado?.nombre }} {{ curso.seccion?.nombre }}</p> }
+    </div>
+  </div>
+
+  @if (matriculas.length === 0) {
+    <div class="ie-card p-4 text-center">
+      <p class="text-secondary mb-0">No hay estudiantes matriculados activamente en este curso.</p>
+    </div>
+  } @else {
+    <div class="ie-card p-3 mb-3">
+      <div class="d-flex justify-content-between align-items-center">
+        <button class="btn btn-outline-secondary btn-sm" (click)="cambiarMes(-1)">&laquo; Anterior</button>
+        <span class="fw-semibold">{{ monthLabel }} {{ selectedYear }}</span>
+        <button class="btn btn-outline-secondary btn-sm" (click)="cambiarMes(1)">Siguiente &raquo;</button>
+      </div>
+    </div>
+
+    <div class="ie-card">
+      <div class="table-responsive">
+        <table class="table ie-table mb-0">
+          <thead>
+            <tr>
+              <th style="min-width:180px;">Estudiante</th>
+              @for (d of diasDelMes; track d) {
+                <th class="text-center" style="min-width:32px;">
+                  {{ d }}
+                  <div class="dropdown d-inline">
+                    <button class="btn btn-sm p-0 text-secondary ms-1" data-bs-toggle="dropdown">&#9660;</button>
+                    <ul class="dropdown-menu dropdown-menu-end small">
+                      <li><a class="dropdown-item" href (click)="$event.preventDefault(); marcarTodos(d, true)">Todos presente</a></li>
+                      <li><a class="dropdown-item" href (click)="$event.preventDefault(); marcarTodos(d, false)">Todos ausente</a></li>
+                    </ul>
+                  </div>
+                </th>
+              }
+            </tr>
+          </thead>
+          <tbody>
+            @for (m of matriculas; track m.idMatricula) {
+              <tr>
+                <td>{{ m.estudiante?.nombres }} {{ m.estudiante?.apellidos }}</td>
+                @for (d of diasDelMes; track d) {
+                  <td class="text-center">
+                    <input type="checkbox" class="form-check-input"
+                      [checked]="isPresente(m.idMatricula, d)"
+                      (change)="toggleAsistencia(m.idMatricula, d)" />
+                  </td>
+                }
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </div>
+  }
+}

@@ -1,27 +1,31 @@
 <div class="ie-sidebar" [class.open]="open">
-  <div class="p-3 d-flex align-items-center gap-2 border-bottom border-light border-opacity-10">
-    <span class="font-display fw-bold fs-5" style="color: var(--ie-accent);">Intranet</span>
-    <span class="text-white-50 small">Escolar</span>
+  <div class="ie-sidebar-brand">
+    <div class="mark">IE</div>
+    <div>
+      <div class="name">Intranet Escolar</div>
+      <div class="sub">{{ brandSub }}</div>
+    </div>
   </div>
 
-  <div class="flex-grow-1 overflow-auto p-2">
-    <nav class="d-flex flex-column gap-1">
-      @for (item of navItems; track item.route) {
-        <a class="nav-link" [class.active]="isActive(item.route)" [routerLink]="item.route" (click)="close.emit()">
+  <nav class="ie-nav">
+    @for (section of sections; track section.title) {
+      <div class="ie-nav-section-title">{{ section.title }}</div>
+      @for (item of section.items; track item.route) {
+        <a class="nav-link" [class.active]="isActive(item.route, item.end)" [routerLink]="item.route" (click)="close.emit()">
           <span [innerHTML]="item.icon"></span>
           <span>{{ item.label }}</span>
         </a>
       }
-    </nav>
-  </div>
+    }
+  </nav>
 
-  <div class="p-2 border-top border-light border-opacity-10">
-    <div class="px-2 py-1 small text-white-50">
-      {{ auth.user()?.username }} · {{ auth.user()?.rol }}
+  <div class="ie-sidebar-footer">
+    <div class="text-white fw-semibold">{{ auth.user()?.username }}</div>
+    <div class="mb-2">
+      <span class="badge-rol {{ auth.user()?.rol }}">{{ auth.user()?.rol }}</span>
     </div>
-    <button class="nav-link w-100" (click)="onLogout()">
-      <span>🔒</span>
-      <span>Cerrar sesión</span>
+    <button class="btn btn-sm btn-outline-light w-100" (click)="onLogout()">
+      Cerrar sesión
     </button>
   </div>
 </div>

@@ -49,7 +49,7 @@ export class ApiService {
 
     const crud = (paths: { listPath: string; createPath: string; updatePath: string; deletePath: string }) => ({
       listar: () => this.http.get(api(paths.listPath)),
-      obtener: (id: number) => this.http.get(`${api(paths.listPath)}/${id}`),
+      obtener: (id: number) => this.http.get(`${api(paths.listPath.replace('/listar', ''))}/${id}`),
       crear: (data: any) => this.http.post(api(paths.createPath), data),
       actualizar: (id: number, data: any) => this.http.put(`${api(paths.updatePath)}/${id}`, data),
       eliminar: (id: number) => this.http.delete(`${api(paths.deletePath)}/${id}`),

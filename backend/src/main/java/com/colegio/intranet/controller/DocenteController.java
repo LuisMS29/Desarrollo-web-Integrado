@@ -97,6 +97,10 @@ public class DocenteController {
     @PreAuthorize("hasAnyRole('ADMIN', 'DIRECTOR')")
     public ResponseEntity<Docente> actualizar(@PathVariable Integer id, @RequestBody Docente docente) {
         docente.setIdDocente(id);
+        boolean completo = docente.getNombres() != null && !docente.getNombres().isBlank()
+                && docente.getApellidos() != null && !docente.getApellidos().isBlank()
+                && docente.getDni() != null && !docente.getDni().isBlank();
+        docente.setPerfilCompleto(completo);
         return ResponseEntity.ok(docenteRepository.save(docente));
     }
 

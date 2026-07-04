@@ -37,7 +37,8 @@
             ],
             "allowedCommonJsDependencies": ["bootstrap"],
             "styles": [
-              "src/styles.css"
+              "src/styles.css",
+              "node_modules/bootstrap-icons/font/bootstrap-icons.css"
             ]
           },
           "configurations": {
@@ -45,7 +46,7 @@
               "budgets": [
                 {
                   "type": "initial",
-                  "maximumWarning": "700kB",
+                  "maximumWarning": "800kB",
                   "maximumError": "1MB"
                 },
                 {

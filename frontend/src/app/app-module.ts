@@ -7,6 +7,7 @@ import { App } from './app';
 import { SharedModule } from './shared/shared.module';
 import { authInterceptor } from './core/interceptors/auth.interceptor';
 import { errorInterceptor } from './core/interceptors/error.interceptor';
+import { OnboardingModule } from './pages/onboarding/onboarding.module';
 import { AdminLayout } from './layouts/admin-layout/admin-layout';
 import { DirectorLayout } from './layouts/director-layout/director-layout';
 import { DocenteLayout } from './layouts/docente-layout/docente-layout';
@@ -24,6 +25,7 @@ import { EstudianteLayout } from './layouts/estudiante-layout/estudiante-layout'
     BrowserModule,
     FormsModule,
     SharedModule,
+    OnboardingModule,
     AppRoutingModule,
   ],
   providers: [

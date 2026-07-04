@@ -1,47 +1,48 @@
 <div class="d-flex" style="min-height:100vh;">
   <div class="d-none d-md-flex flex-column justify-content-center align-items-center text-white p-5" style="flex:1;background:linear-gradient(135deg, var(--ie-primary-dark), var(--ie-primary));">
-    <div style="max-width:380px;">
+    <div class="text-center" style="max-width:380px;">
       <div class="display-3 fw-bold font-display mb-2" style="color:var(--ie-accent);">Bienvenido</div>
-      <p class="text-white-50 small">Completa tu perfil docente para acceder al sistema. Los campos marcados son obligatorios.</p>
+      <p class="text-white-50 small">Completa tu perfil docente para acceder al sistema.</p>
     </div>
   </div>
   <div class="d-flex flex-column justify-content-center p-4" style="flex:1;background:#fff;overflow-y:auto;">
     <div style="max-width:480px;width:100%;margin:2rem auto;">
       <h2 class="font-display fw-bold h4 mb-1">Completar perfil docente</h2>
-      <p class="text-secondary small mb-4">Ingresa tus datos personales y profesionales.</p>
-      <form (ngSubmit)="onSubmit()">
-        <div class="mb-3">
-          <label class="form-label small fw-semibold">Código de docente</label>
-          <input class="form-control" [(ngModel)]="form.codigoDocente" name="codigoDocente" />
-        </div>
+      <p class="text-secondary small mb-4">Ingresa tus datos personales y profesionales. Los campos marcados son obligatorios.</p>
+
+      @if (errorMsg) {
+        <div class="alert alert-danger py-2 small">{{ errorMsg }}</div>
+      }
+
+      <form (ngSubmit)="onSubmit()" novalidate>
         <div class="row g-3 mb-3">
           <div class="col-sm-6">
             <label class="form-label small fw-semibold">Nombres <span class="text-danger">*</span></label>
-            <input class="form-control" [(ngModel)]="form.nombres" name="nombres" required />
+            <input class="form-control" [(ngModel)]="form.nombres" name="nombres" placeholder="Ej. Juan Carlos" [disabled]="saving" />
           </div>
           <div class="col-sm-6">
             <label class="form-label small fw-semibold">Apellidos <span class="text-danger">*</span></label>
-            <input class="form-control" [(ngModel)]="form.apellidos" name="apellidos" required />
+            <input class="form-control" [(ngModel)]="form.apellidos" name="apellidos" placeholder="Ej. Pérez García" [disabled]="saving" />
           </div>
         </div>
         <div class="row g-3 mb-3">
           <div class="col-sm-6">
-            <label class="form-label small fw-semibold">DNI</label>
-            <input class="form-control" [(ngModel)]="form.dni" name="dni" />
+            <label class="form-label small fw-semibold">DNI <span class="text-danger">*</span></label>
+            <input class="form-control" [(ngModel)]="form.dni" name="dni" maxlength="8" placeholder="8 dígitos" [disabled]="saving" />
           </div>
           <div class="col-sm-6">
             <label class="form-label small fw-semibold">Especialidad</label>
-            <input class="form-control" [(ngModel)]="form.especialidad" name="especialidad" />
+            <input class="form-control" [(ngModel)]="form.especialidad" name="especialidad" placeholder="Ej. Matemática" [disabled]="saving" />
           </div>
         </div>
         <div class="row g-3 mb-4">
           <div class="col-sm-6">
             <label class="form-label small fw-semibold">Teléfono</label>
-            <input class="form-control" [(ngModel)]="form.telefono" name="telefono" />
+            <input class="form-control" [(ngModel)]="form.telefono" name="telefono" placeholder="Ej. 987654321" [disabled]="saving" />
           </div>
           <div class="col-sm-6">
             <label class="form-label small fw-semibold">Email</label>
-            <input type="email" class="form-control" [(ngModel)]="form.email" name="email" />
+            <input type="email" class="form-control" [(ngModel)]="form.email" name="email" placeholder="Ej. jperez@colegio.edu.pe" [disabled]="saving" />
           </div>
         </div>
         <button type="submit" class="btn btn-accent w-100" [disabled]="saving">

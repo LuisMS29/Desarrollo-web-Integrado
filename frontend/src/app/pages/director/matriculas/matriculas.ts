@@ -28,6 +28,10 @@ export class DirectorMatriculas {
   searchable = true;
   searchPlaceholder = 'Buscar por estudiante o curso...';
   searchFields = ['estudiante.nombres', 'estudiante.apellidos', 'curso.asignatura.nombre'];
+  relationLoaders = {
+    estudiante: () => this.api.estudiantes.listar(),
+    curso: () => this.api.cursos.listar(),
+  };
 
   constructor(public api: ApiService) {}
 }

@@ -32,6 +32,13 @@ export class DirectorCursos {
   searchFields = ['asignatura.nombre', 'grado.nombre', 'docente.nombres', 'docente.apellidos'];
   sortOptions = [{ key: 'asignatura.nombre', label: 'Asignatura' }, { key: 'grado.nombre', label: 'Grado' }];
   defaultSort = 'asignatura.nombre';
+  relationLoaders = {
+    asignatura: () => this.api.asignaturas.listar(),
+    grado: () => this.api.grados.listar(),
+    seccion: () => this.api.secciones.listar(),
+    periodoAcademico: () => this.api.periodos.listar(),
+    docente: () => this.api.docentes.listar(),
+  };
 
   constructor(public api: ApiService) {}
 }

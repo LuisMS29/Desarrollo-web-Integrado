@@ -27,6 +27,9 @@ export class DirectorHorarios {
     { key: 'aula', label: 'Aula', type: 'text' },
   ];
   canDelete = false;
+  relationLoaders = {
+    curso: () => this.api.cursos.listar(),
+  };
 
   constructor(public api: ApiService) {}
 }

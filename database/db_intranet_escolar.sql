@@ -235,9 +235,27 @@ CREATE TABLE comunicado (
     usuario_autor_id INT NOT NULL,
     fecha_publicacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     fecha_expiracion DATE NULL,
-    dirigido_a ENUM('TODOS','DOCENTE','ESTUDIANTE','DIRECTOR','ADMIN') DEFAULT 'TODOS',
+    dirigido_a ENUM('TODOS','DOCENTE','ESTUDIANTE','DIRECTOR','ADMIN','CURSO') DEFAULT 'TODOS',
+    curso_id INT NULL,
     FOREIGN KEY (usuario_autor_id) REFERENCES usuario(id_usuario)
-        ON DELETE RESTRICT ON UPDATE CASCADE
+        ON DELETE RESTRICT ON UPDATE CASCADE,
+    FOREIGN KEY (curso_id) REFERENCES curso(id_curso)
+        ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB;
+
+-- ============================================
+-- 16. TABLA: comunicado_leido
+-- ============================================
+CREATE TABLE comunicado_leido (
+    id_comunicado_leido INT AUTO_INCREMENT PRIMARY KEY,
+    comunicado_id INT NOT NULL,
+    usuario_id INT NOT NULL,
+    fecha_lectura TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (comunicado_id) REFERENCES comunicado(id_comunicado)
+        ON DELETE CASCADE ON UPDATE CASCADE,
+    FOREIGN KEY (usuario_id) REFERENCES usuario(id_usuario)
+        ON DELETE CASCADE ON UPDATE CASCADE,
+    UNIQUE KEY uk_comunicado_usuario (comunicado_id, usuario_id)
 ) ENGINE=InnoDB;
 
 -- ============================================
@@ -273,14 +291,14 @@ INSERT INTO asignatura (id_asignatura, nombre, descripcion) VALUES
 
 -- 5. Usuarios (contraseña: 123456 - BCrypt hasheada)
 INSERT INTO usuario (id_usuario, username, password_hash, email, rol, activo) VALUES
-(1, 'admin', '123456', 'admin@colegio.edu.pe', 'ADMIN', 1),
-(2, 'director', '123456', 'director@colegio.edu.pe', 'DIRECTOR', 1),
-(3, 'juanperez', '123456', 'jperez@colegio.edu.pe', 'DOCENTE', 1),
-(4, 'marialopez', '123456', 'mlopez@colegio.edu.pe', 'DOCENTE', 1),
-(5, 'carlosgarcia', '123456', 'cgarcia@colegio.edu.pe', 'DOCENTE', 1),
-(6, 'anatorres', '123456', 'atorres@colegio.edu.pe', 'DOCENTE', 1),
-(7, 'luiscastillo', '123456', 'lcastillo@alumno.edu.pe', 'ESTUDIANTE', 1),
-(8, 'mariavelarde', '123456', 'mvelarde@alumno.edu.pe', 'ESTUDIANTE', 1);
+(1, 'admin', '$2b$10$EeKRux6l6xnoQ8sLRAs6zOwXMtlTYYVO/X92h6wp8/1tRWO25Pf6.', 'admin@colegio.edu.pe', 'ADMIN', 1),
+(2, 'director', '$2b$10$EeKRux6l6xnoQ8sLRAs6zOwXMtlTYYVO/X92h6wp8/1tRWO25Pf6.', 'director@colegio.edu.pe', 'DIRECTOR', 1),
+(3, 'jperez', '$2b$10$EeKRux6l6xnoQ8sLRAs6zOwXMtlTYYVO/X92h6wp8/1tRWO25Pf6.', 'jperez@colegio.edu.pe', 'DOCENTE', 1),
+(4, 'mlopez', '$2b$10$EeKRux6l6xnoQ8sLRAs6zOwXMtlTYYVO/X92h6wp8/1tRWO25Pf6.', 'mlopez@colegio.edu.pe', 'DOCENTE', 1),
+(5, 'cgarcia', '$2b$10$EeKRux6l6xnoQ8sLRAs6zOwXMtlTYYVO/X92h6wp8/1tRWO25Pf6.', 'cgarcia@colegio.edu.pe', 'DOCENTE', 1),
+(6, 'atorres', '$2b$10$EeKRux6l6xnoQ8sLRAs6zOwXMtlTYYVO/X92h6wp8/1tRWO25Pf6.', 'atorres@colegio.edu.pe', 'DOCENTE', 1),
+(7, 'jcastillo', '$2b$10$EeKRux6l6xnoQ8sLRAs6zOwXMtlTYYVO/X92h6wp8/1tRWO25Pf6.', 'jcastillo@alumno.edu.pe', 'ESTUDIANTE', 1),
+(8, 'mvelarde', '$2b$10$EeKRux6l6xnoQ8sLRAs6zOwXMtlTYYVO/X92h6wp8/1tRWO25Pf6.', 'mvelarde@alumno.edu.pe', 'ESTUDIANTE', 1);
 
 -- 6. Docentes
 INSERT INTO docente (id_docente, codigo_docente, nombres, apellidos, dni, especialidad, telefono, email, perfil_completo, usuario_id) VALUES
@@ -291,7 +309,7 @@ INSERT INTO docente (id_docente, codigo_docente, nombres, apellidos, dni, especi
 
 -- 7. Estudiantes
 INSERT INTO estudiante (id_estudiante, codigo_estudiante, nombres, apellidos, dni, fecha_nacimiento, direccion, telefono, perfil_completo, usuario_id) VALUES
-(1, 'EST001', 'Luis Fernando', 'Castillo Farro', '11111111', '2020-05-15', 'Av. Los Olivos 123', NULL, 1, 7),
+(1, 'EST001', 'Jairo Joseph', 'Castillo Farro', '11111111', '2020-05-15', 'Av. Los Olivos 123', NULL, 1, 7),
 (2, 'EST002', 'María José', 'Quispe Sulca', '22222222', '2020-07-21', 'Jr. Las Flores 456', NULL, 1, NULL),
 (3, 'EST003', 'Juan Carlos', 'Pérez Tupayachi', '33333333', '2020-09-10', 'Calle Real 789', NULL, 1, NULL),
 (4, 'EST004', 'Ana Paula', 'Tupayachi Carmen', '44444444', '2020-11-30', 'Av. Brasil 321', NULL, 1, NULL),

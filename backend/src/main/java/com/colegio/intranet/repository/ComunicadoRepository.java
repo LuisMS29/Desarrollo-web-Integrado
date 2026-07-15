@@ -10,4 +10,6 @@ import java.util.List;
 public interface ComunicadoRepository extends JpaRepository<Comunicado, Integer> {
     List<Comunicado> findByDirigidoAOrDirigidoAOrderByFechaPublicacionDesc(
         Comunicado.DirigidoA dirigidoA1, Comunicado.DirigidoA dirigidoA2);
+
+    List<Comunicado> findByUsuarioAutorIdUsuarioOrderByFechaPublicacionDesc(Integer usuarioId);
 }

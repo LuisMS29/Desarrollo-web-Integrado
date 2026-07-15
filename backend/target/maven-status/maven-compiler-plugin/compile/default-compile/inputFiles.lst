@@ -11,11 +11,13 @@ C:\Users\jairo\Desktop\Desarrollo-web-Integrado\backend\src\main\java\com\colegi
 C:\Users\jairo\Desktop\Desarrollo-web-Integrado\backend\src\main\java\com\colegio\intranet\entity\Nota.java
 C:\Users\jairo\Desktop\Desarrollo-web-Integrado\backend\src\main\java\com\colegio\intranet\repository\UsuarioRepository.java
 C:\Users\jairo\Desktop\Desarrollo-web-Integrado\backend\src\main\java\com\colegio\intranet\dto\ComunicadoDTO.java
+C:\Users\jairo\Desktop\Desarrollo-web-Integrado\backend\src\main\java\com\colegio\intranet\entity\ComunicadoLeido.java
 C:\Users\jairo\Desktop\Desarrollo-web-Integrado\backend\src\main\java\com\colegio\intranet\repository\AsignaturaRepository.java
 C:\Users\jairo\Desktop\Desarrollo-web-Integrado\backend\src\main\java\com\colegio\intranet\entity\HorarioCurso.java
 C:\Users\jairo\Desktop\Desarrollo-web-Integrado\backend\src\main\java\com\colegio\intranet\controller\NotaController.java
 C:\Users\jairo\Desktop\Desarrollo-web-Integrado\backend\src\main\java\com\colegio\intranet\dto\DocenteDTO.java
 C:\Users\jairo\Desktop\Desarrollo-web-Integrado\backend\src\main\java\com\colegio\intranet\repository\AsistenciaRepository.java
+C:\Users\jairo\Desktop\Desarrollo-web-Integrado\backend\src\main\java\com\colegio\intranet\repository\ComunicadoLeidoRepository.java
 C:\Users\jairo\Desktop\Desarrollo-web-Integrado\backend\src\main\java\com\colegio\intranet\repository\EstudianteRepository.java
 C:\Users\jairo\Desktop\Desarrollo-web-Integrado\backend\src\main\java\com\colegio\intranet\entity\Grado.java
 C:\Users\jairo\Desktop\Desarrollo-web-Integrado\backend\src\main\java\com\colegio\intranet\controller\NotificacionController.java

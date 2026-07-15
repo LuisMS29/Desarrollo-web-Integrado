@@ -42,7 +42,11 @@ public class Comunicado {
     @Enumerated(EnumType.STRING)
     private DirigidoA dirigidoA = DirigidoA.TODOS;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "curso_id")
+    private Curso curso;
+
     public enum DirigidoA {
-        TODOS, DOCENTE, ESTUDIANTE, DIRECTOR, ADMIN
+        TODOS, DOCENTE, ESTUDIANTE, DIRECTOR, ADMIN, CURSO
     }
 }

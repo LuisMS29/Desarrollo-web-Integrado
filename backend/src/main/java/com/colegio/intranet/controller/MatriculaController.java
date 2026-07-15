@@ -10,6 +10,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -74,9 +75,21 @@ public class MatriculaController {
 
     @PutMapping("/director/matriculas/{id}")
     @PreAuthorize("hasAnyRole('ADMIN', 'DIRECTOR')")
+    @Transactional
     public ResponseEntity<Matricula> actualizar(@PathVariable Integer id, @RequestBody Matricula matricula) {
         matricula.setIdMatricula(id);
-        return ResponseEntity.ok(matriculaRepository.save(matricula));
+        Matricula saved = matriculaRepository.save(matricula);
+        if (saved.getEstudiante() != null && saved.getEstudiante().getUsuario() != null) {
+            notificacionService.notificar(currentUser(), saved.getEstudiante().getUsuario().getIdUsuario(),
+                "Matrícula actualizada",
+                "Tu matrícula ha sido actualizada.",
+                "INFO", "matricula");
+        }
+        notificacionService.notificarARol(currentUser(), Usuario.Rol.DIRECTOR,
+            "Matrícula actualizada",
+            "Se actualizó una matrícula.",
+            "INFO", "matricula");
+        return ResponseEntity.ok(saved);
     }
 
     @DeleteMapping("/admin/matriculas/{id}")

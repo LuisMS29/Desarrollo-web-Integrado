@@ -21,6 +21,7 @@ com\colegio\intranet\entity\Comunicado.class
 com\colegio\intranet\entity\Notificacion$NotificacionBuilder.class
 com\colegio\intranet\controller\HorarioCursoController.class
 com\colegio\intranet\dto\NotaDTO.class
+com\colegio\intranet\repository\ComunicadoLeidoRepository.class
 com\colegio\intranet\config\JwtAuthenticationFilter.class
 com\colegio\intranet\entity\Grado.class
 com\colegio\intranet\config\WebConfig.class
@@ -70,5 +71,6 @@ com\colegio\intranet\repository\GradoRepository.class
 com\colegio\intranet\controller\PeriodoAcademicoController.class
 com\colegio\intranet\entity\PeriodoAcademico.class
 com\colegio\intranet\controller\AsignaturaController.class
+com\colegio\intranet\entity\ComunicadoLeido.class
 com\colegio\intranet\dto\RegisterRequest.class
 com\colegio\intranet\entity\Comunicado$DirigidoA.class

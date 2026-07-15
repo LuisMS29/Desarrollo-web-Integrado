@@ -1,0 +1,424 @@
+<div class="entity-page">
+  <!-- ═══ HEADER ═══ -->
+  <div class="admin-hero mb-4">
+    <div class="admin-hero-glow"></div>
+    <div class="position-relative d-flex flex-wrap align-items-center justify-content-between gap-3">
+      <div class="d-flex align-items-center gap-3">
+        @if (headerIcon) {
+        <div class="admin-hero-avatar" [style.background]="colorGradient">
+          <i class="bi" [class]="headerIcon" style="font-size:1.3rem;"></i>
+        </div>
+        }
+        <div>
+          <div class="d-flex align-items-center gap-2 mb-1">
+            <h1 class="admin-hero-title mb-0">{{ title }}</h1>
+            <span class="admin-hero-badge"
+              [style.background]="accentColor + '22'"
+              [style.color]="accentColor"
+              [style.border-color]="accentColor + '40'">
+              <i class="bi me-1" [class]="headerIcon || 'bi-tag'"></i>Gestión
+            </span>
+          </div>
+          @if (subtitle) { <p class="admin-hero-subtitle mb-0">{{ subtitle }}</p> }
+        </div>
+      </div>
+      <div class="d-flex align-items-center gap-2">
+        @if (!loading && !error) {
+        <div class="admin-hero-stats-mini">
+          <div class="admin-hero-stat-mini">
+            <span class="admin-hero-stat-mini-value">{{ filtered.length }}</span>
+            <span class="admin-hero-stat-mini-label">{{ entityLabel }}{{ filtered.length !== 1 ? 's' : '' }}</span>
+          </div>
+        </div>
+        }
+        @if (canCreate) {
+        <button class="btn btn-accent px-3 ms-2" (click)="openCreate()" style="white-space:nowrap;">
+          <i class="bi bi-plus-lg me-1"></i>Nuevo
+        </button>
+        }
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ FILTERS ═══ -->
+  @if (searchable || sortOptions.length > 0) {
+  <div class="entity-filters-card mb-3">
+    <div class="row g-2 align-items-center">
+      @if (searchable) {
+      <div class="col-md-6">
+        <div class="search-wrapper">
+          <i class="bi bi-search search-icon"></i>
+          <input type="text" class="form-control search-input" [placeholder]="searchPlaceholder"
+            [(ngModel)]="search" (input)="applyFilter()" />
+          @if (search) {
+          <button class="search-clear" (click)="search = ''; applyFilter()" title="Limpiar">
+            <i class="bi bi-x-lg"></i>
+          </button>
+          }
+        </div>
+      </div>
+      }
+      @if (sortOptions.length > 0) {
+      <div class="col-md-4">
+        <div class="sort-group input-group">
+          <span class="input-group-text"><i class="bi bi-arrow-up-down"></i></span>
+          <select class="form-select" [(ngModel)]="sortField" (change)="applyFilter()">
+            <option value="">Ordenar por</option>
+            @for (opt of sortOptions; track opt.key) {
+            <option [value]="opt.key">{{ opt.label }}</option>
+            }
+          </select>
+          <button class="btn sort-dir-btn" (click)="sortDir = sortDir === 'asc' ? 'desc' : 'asc'; applyFilter()"
+            [title]="sortDir === 'asc' ? 'Ascendente' : 'Descendente'">
+            <i class="bi" [class.bi-sort-alpha-down]="sortDir === 'asc'" [class.bi-sort-alpha-down-alt]="sortDir === 'desc'"></i>
+          </button>
+        </div>
+      </div>
+      }
+    </div>
+    <!-- Active filter indicator -->
+    @if (search) {
+    <div class="d-flex align-items-center gap-2 mt-2 pt-2 border-top" style="border-color:var(--ie-line-light) !important;">
+      <span class="small text-ink-soft">Filtrado por:</span>
+      <span class="entity-active-filter">
+        <i class="bi bi-search me-1"></i>"{{ search }}"
+        <button class="btn-close-sm" (click)="search = ''; applyFilter()" title="Quitar filtro"></button>
+      </span>
+      <button class="btn btn-sm btn-soft ms-auto px-2 py-0" style="font-size:0.75rem;"
+        (click)="search = ''; sortField = ''; applyFilter()">
+        <i class="bi bi-arrow-counterclockwise me-1"></i>Limpiar todo
+      </button>
+    </div>
+    }
+  </div>
+  }
+
+  <!-- ═══ LOADING ═══ -->
+  @if (loading) {
+  <div class="entity-loading">
+    <div class="entity-skeleton-header">
+      <div class="entity-skeleton-line" style="width:30%;height:14px;"></div>
+      <div class="entity-skeleton-line" style="width:50%;height:12px;margin-top:6px;"></div>
+    </div>
+    @for (item of [1,2,3,4]; track item) {
+    <div class="entity-skeleton-row">
+      <div class="d-flex align-items-center gap-3" style="flex:1;">
+        <div class="entity-skeleton-avatar"></div>
+        <div style="flex:1;">
+          <div class="entity-skeleton-line" style="width:50%;height:13px;"></div>
+          <div class="entity-skeleton-line" style="width:35%;height:11px;margin-top:5px;"></div>
+        </div>
+      </div>
+      <div class="entity-skeleton-line" style="width:120px;height:12px;"></div>
+      <div class="entity-skeleton-line" style="width:60px;height:24px;border-radius:999px;"></div>
+      <div class="entity-skeleton-line" style="width:80px;height:12px;"></div>
+    </div>
+    }
+  </div>
+  }
+
+  <!-- ═══ ERROR ═══ -->
+  @else if (error) {
+  <app-error-state [message]="error" (retry)="load()"></app-error-state>
+  }
+
+  <!-- ═══ TABLE VIEW ═══ -->
+  @else if (viewMode === 'table') {
+  <div class="entity-table-card">
+    <div class="entity-table-header">
+      <div class="d-flex align-items-center gap-2">
+        @if (headerIcon) {
+        <span class="entity-table-header-icon" [style.background]="accentColor + '18'" [style.color]="accentColor">
+          <i class="bi" [class]="headerIcon"></i>
+        </span>
+        }
+        <span class="fw-semibold small" [style.color]="accentColor">
+          {{ rowCountLabel || entityLabel.charAt(0).toUpperCase() + entityLabel.slice(1) + (filtered.length !== 1 ? 's' : '') + ' registrados' }}
+        </span>
+        <span class="small text-ink-muted ms-1">
+          {{ filtered.length }} registro{{ filtered.length !== 1 ? 's' : '' }}
+          @if (filtered.length !== rows.length) {
+          <span class="text-ink-muted small">(de {{ rows.length }})</span>
+          }
+        </span>
+      </div>
+    </div>
+    <div class="table-responsive" style="overflow-x:auto;">
+      <table class="entity-table">
+        <thead>
+          <tr>
+            @if (showRowNumber) { <th style="width:48px;text-align:center;">#</th> }
+            @for (c of columns; track c.key) { <th>{{ c.label }}</th> }
+            @if (canEdit || canDelete || canView) { <th class="text-end">Acciones</th> }
+          </tr>
+        </thead>
+        <tbody>
+          @if (filtered.length === 0) {
+          <tr>
+            <td [attr.colspan]="(showRowNumber ? 1 : 0) + columns.length + (canEdit || canDelete || canView ? 1 : 0)">
+              <div class="entity-empty">
+                <div class="entity-empty-icon">
+                  <i class="bi bi-inbox"></i>
+                </div>
+                <h4 class="font-display fw-bold h6 mb-1">
+                  {{ search ? 'Sin resultados' : 'Aún no hay registros' }}
+                </h4>
+                <p class="small text-ink-soft mb-0">
+                  @if (search) {
+                  No se encontraron registros que coincidan con "{{ search }}".
+                  } @else if (canCreate) {
+                  Crea el primer registro usando el botón superior.
+                  } @else {
+                  No hay registros disponibles.
+                  }
+                </p>
+              </div>
+            </td>
+          </tr>
+          }
+          @for (row of filtered; track row[idKey]; let i = $index) {
+          <tr class="entity-row entity-row-stagger" [class.entity-row-alt]="i % 2 === 1" [style.--stagger-delay]="i * 0.04 + 's'">
+            @if (showRowNumber) {
+            <td style="text-align:center;">
+              <span class="text-ink-muted" style="font-size:0.8rem;font-weight:500;">{{ i + 1 }}</span>
+            </td>
+            }
+            @for (c of columns; track c.key) {
+            <td [innerHTML]="(c.render ? c.render(row) : (row[c.key] ?? '—')) | safeHtml"></td>
+            }
+            @if (canEdit || canDelete || canView) {
+            <td class="text-end">
+              <div class="entity-actions">
+                @if (canView) {
+                <button class="entity-action-btn view" (click)="openView(row)" title="Ver detalle">
+                  <i class="bi bi-eye"></i>
+                </button>
+                }
+                @if (canEdit) {
+                <button class="entity-action-btn info" (click)="openEdit(row)" title="Editar">
+                  <i class="bi bi-pencil"></i>
+                </button>
+                }
+                @if (canDelete) {
+                <button class="entity-action-btn danger" (click)="confirmDelete(row)" title="Eliminar">
+                  <i class="bi bi-trash3"></i>
+                </button>
+                }
+              </div>
+            </td>
+            }
+          </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </div>
+  }
+
+  <!-- ═══ CARDS VIEW ═══ -->
+  @else if (viewMode === 'cards') {
+  <div class="entity-cards-container">
+    <div class="entity-cards-header">
+      <div class="d-flex align-items-center gap-2">
+        <i class="bi bi-grid-3x3-gap-fill" style="color:var(--ie-ink-muted);"></i>
+        <span class="fw-semibold small text-ink-soft">{{ filtered.length }} registro{{ filtered.length !== 1 ? 's' : '' }}</span>
+        @if (filtered.length !== rows.length) {
+        <span class="text-ink-muted small">(de {{ rows.length }})</span>
+        }
+      </div>
+    </div>
+    @if (filtered.length === 0) {
+    <div class="entity-empty">
+      <div class="entity-empty-icon">
+        <i class="bi bi-inbox"></i>
+      </div>
+      <h4 class="font-display fw-bold h6 mb-1">
+        {{ search ? 'Sin resultados' : 'Aún no hay registros' }}
+      </h4>
+      <p class="small text-ink-soft mb-0">
+        @if (search) {
+        No se encontraron registros que coincidan con "{{ search }}".
+        } @else if (canCreate) {
+        Crea el primer registro usando el botón superior.
+        } @else {
+        No hay registros disponibles.
+        }
+      </p>
+    </div>
+    }
+    <div class="entity-cards-grid">
+      @for (row of filtered; track row[idKey]; let i = $index) {
+      <div class="entity-card-item" [style.--card-accent]="getCardAccent(row)" [style.--stagger-delay]="i * 0.06 + 's'">
+        <div class="entity-card-accent"></div>
+        <div class="entity-card-body">
+          <div class="entity-card-icon-row">
+            <div class="entity-card-icon" [style.background]="getCardAccent(row)" [style.color]="'#fff'">
+              <i class="bi" [class]="cardConfig?.icon || 'bi-tag'"></i>
+            </div>
+          </div>
+          @for (cf of (cardConfig?.fields || []); track cf.key) {
+          <div class="entity-card-field">
+            <span class="entity-card-field-label">{{ cf.label }}</span>
+            <span class="entity-card-field-value" [innerHTML]="(cf.render ? cf.render(row) : (row[cf.key] ?? '—')) | safeHtml"></span>
+          </div>
+          }
+        </div>
+        <div class="entity-card-actions">
+          @if (canView) {
+          <button class="entity-action-btn view" (click)="openView(row)" title="Ver detalle">
+            <i class="bi bi-eye"></i>
+          </button>
+          }
+          @if (canEdit) {
+          <button class="entity-action-btn info" (click)="openEdit(row)" title="Editar">
+            <i class="bi bi-pencil"></i>
+          </button>
+          }
+          @if (canDelete) {
+          <button class="entity-action-btn danger" (click)="confirmDelete(row)" title="Eliminar">
+            <i class="bi bi-trash3"></i>
+          </button>
+          }
+        </div>
+      </div>
+      }
+    </div>
+  </div>
+  }
+
+  <!-- ═══ FORM MODAL ═══ -->
+  @if (showForm) {
+  <div class="modal d-block" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+      <div class="modal-content">
+        <form (ngSubmit)="handleSubmit()">
+          <div class="modal-header">
+            <div class="d-flex align-items-center gap-3">
+              <div class="modal-header-icon" [style.background]="editingRow ? 'var(--ie-info-soft)' : 'var(--ie-accent-soft)'" [style.color]="editingRow ? 'var(--ie-info)' : 'var(--ie-accent-dark)'">
+                <i class="bi" [class.bi-pencil-fill]="editingRow" [class.bi-plus-lg]="!editingRow"></i>
+              </div>
+              <div>
+                <h5 class="modal-title font-display fw-bold mb-0">{{ editingRow ? 'Editar registro' : 'Nuevo registro' }}</h5>
+                <p class="small text-ink-soft mb-0">{{ editingRow ? 'Modifica los campos necesarios.' : 'Completa los campos para crear un nuevo registro.' }}</p>
+              </div>
+            </div>
+            <button type="button" class="btn-close" (click)="showForm = false" [disabled]="saving"></button>
+          </div>
+          <div class="modal-body">
+            @if (formError) {
+            <div class="entity-form-alert">
+              <i class="bi bi-exclamation-circle me-2"></i>{{ formError }}
+            </div>
+            }
+            <div class="row g-3">
+              @for (f of fields; track f.key) {
+              <div class="col-12" [class.col-md-6]="f.type !== 'textarea'">
+                <label class="entity-field-label">
+                  {{ f.label }} @if (f.required) { <span class="text-danger">*</span> }
+                </label>
+                @if (f.type === 'textarea') {
+                <textarea class="entity-field" rows="3" [value]="form[f.key]" (input)="handleChange(f, $any($event.target).value)" [disabled]="saving"></textarea>
+                } @else if (f.type === 'boolean') {
+                <div class="form-check form-switch" style="padding-top:0.35rem;">
+                  <input type="checkbox" class="form-check-input ie-toggle" [checked]="!!form[f.key]" (change)="handleChange(f, $any($event.target).checked)" [disabled]="saving" />
+                </div>
+                } @else if (f.type === 'select' || f.type === 'relation') {
+                <select class="entity-field" [value]="form[f.key] || ''" (change)="handleChange(f, $any($event.target).value)" [disabled]="saving || relationsLoading">
+                  <option value="" disabled>Selecciona una opción</option>
+                  @if (f.type === 'select') {
+                    @for (opt of f.options; track opt.value) {
+                    <option [value]="opt.value">{{ opt.label }}</option>
+                    }
+                  } @else if (f.type === 'relation' && relationOptions[f.key]) {
+                    @for (opt of relationOptions[f.key]; track $index) {
+                    <option [value]="opt[f.relation!.idKey]">{{ f.relation!.labelFn(opt) }}</option>
+                    }
+                  }
+                </select>
+                } @else {
+                <input [type]="f.type === 'number' ? 'number' : f.type === 'date' ? 'date' : 'text'" class="entity-field"
+                  [value]="form[f.key]" (input)="handleChange(f, $any($event.target).value)" [disabled]="saving" />
+                }
+              </div>
+              }
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-soft px-4" (click)="showForm = false" [disabled]="saving">Cancelar</button>
+            <button type="submit" class="btn btn-accent px-4" [disabled]="saving">
+              @if (saving) {
+              <span class="spinner-border spinner-border-sm me-2"></span> Guardando...
+              } @else {
+              <i class="bi bi-check-lg me-2"></i>{{ editingRow ? 'Guardar cambios' : 'Crear registro' }}
+              }
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+  <div class="modal-backdrop show"></div>
+  }
+
+  <!-- ═══ VIEW DETAIL MODAL ═══ -->
+  @if (showViewModal && viewingRow) {
+  <div class="modal d-block" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+      <div class="modal-content">
+        <div class="modal-header">
+          <div class="d-flex align-items-center gap-3">
+            <div class="modal-header-icon" style="background:var(--ie-view-soft, #e0f2fe);color:var(--ie-view, #0284c7);">
+              <i class="bi bi-eye-fill"></i>
+            </div>
+            <div>
+              <h5 class="modal-title font-display fw-bold mb-0">Detalle del registro</h5>
+              <p class="small text-ink-soft mb-0">Información completa del registro seleccionado.</p>
+            </div>
+          </div>
+          <button type="button" class="btn-close" (click)="showViewModal = false"></button>
+        </div>
+        <div class="modal-body">
+          <div class="row g-3">
+            @for (f of fields; track f.key) {
+            <div class="col-12" [class.col-md-6]="f.type !== 'textarea'">
+              <div class="entity-detail-field">
+                <span class="entity-detail-label">{{ f.label }}</span>
+                <span class="entity-detail-value">
+                  @if (f.type === 'boolean') {
+                    @if (viewingRow[f.key]) {
+                    <span class="table-badge table-badge-active"><i class="bi bi-check-circle-fill me-1"></i>Sí</span>
+                    } @else {
+                    <span class="table-badge table-badge-inactive"><i class="bi bi-x-circle-fill me-1"></i>No</span>
+                    }
+                  } @else if (f.type === 'select' || f.type === 'relation') {
+                    {{ getFieldDisplay(f, viewingRow) }}
+                  } @else {
+                    {{ viewingRow[f.key] ?? '—' }}
+                  }
+                </span>
+              </div>
+            </div>
+            }
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-accent px-4" (click)="showViewModal = false">
+            <i class="bi bi-check-lg me-2"></i>Entendido
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="modal-backdrop show"></div>
+  }
+
+  <!-- ═══ DELETE CONFIRM ═══ -->
+  <app-confirm-modal [show]="!!deleteTarget" title="Eliminar registro" message="Esta acción no se puede deshacer. ¿Deseas eliminar este registro?"
+    confirmLabel="Eliminar" confirmVariant="danger" [loading]="deleteLoading" (confirm)="handleDelete()" (cancel)="deleteTarget = null"></app-confirm-modal>
+
+  <!-- ═══ ALERT MODAL ═══ -->
+  @if (alertMessage) {
+  <app-confirm-modal [show]="true" [title]="alertTitle" [message]="alertMessage" confirmLabel="Entendido" confirmVariant="primary"
+    (confirm)="alertMessage = ''; alertTitle = ''" (cancel)="alertMessage = ''; alertTitle = ''"></app-confirm-modal>
+  }
+</div>

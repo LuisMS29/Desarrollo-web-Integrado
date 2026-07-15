@@ -1,0 +1,10 @@
+<div class="d-flex flex-column align-items-center justify-content-center py-5">
+  <div class="mb-3" style="width:48px;height:48px;border-radius:999px;background:var(--ie-danger-soft);display:flex;align-items:center;justify-content:center;">
+    <i class="bi bi-exclamation-triangle" style="color:var(--ie-danger);font-size:1.3rem;"></i>
+  </div>
+  <div class="fw-semibold mb-1" style="color:var(--ie-danger);">Error</div>
+  <p class="text-ink-soft mb-3 small text-center" style="max-width:360px;">{{ message }}</p>
+  <button class="btn btn-soft btn-sm" (click)="retry.emit()">
+    <i class="bi bi-arrow-clockwise me-1"></i>Reintentar
+  </button>
+</div>

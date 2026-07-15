@@ -1,0 +1,176 @@
+<div class="dashboard-page stagger-children">
+  <!-- ═══ Welcome Hero (Admin style) ═══ -->
+  <div class="admin-hero mb-4">
+    <div class="admin-hero-glow"></div>
+    <div class="admin-hero-bg-shape admin-hero-shape-1"></div>
+    <div class="admin-hero-bg-shape admin-hero-shape-2"></div>
+    <div class="position-relative d-flex flex-wrap align-items-center justify-content-between gap-3">
+      <div class="d-flex align-items-center gap-3">
+        <div class="admin-hero-avatar" style="background:linear-gradient(135deg,#059669,#34d399);">
+          <span>{{ estudiante?.nombres?.charAt(0)?.toUpperCase() || auth.user()?.username?.charAt(0)?.toUpperCase() || 'E' }}</span>
+        </div>
+        <div>
+          <div class="d-flex align-items-center gap-2 mb-1">
+            <h1 class="admin-hero-title mb-0">
+              <i class="bi {{ greetingIcon }} me-2"></i>{{ greeting }}, {{ estudiante?.nombres?.split(' ')[0] || auth.user()?.username }}
+            </h1>
+            <span class="admin-hero-badge" style="background:rgba(5,150,105,0.15);color:#34d399;border-color:rgba(5,150,105,0.2);">
+              <i class="bi bi-mortarboard me-1"></i>Estudiante
+            </span>
+          </div>
+          <p class="admin-hero-subtitle mb-0">
+            <i class="bi bi-person-badge me-1"></i>Código {{ estudiante?.codigoEstudiante || '—' }}
+          </p>
+        </div>
+      </div>
+      <div class="admin-hero-stats-mini">
+        <div class="admin-hero-stat-mini">
+          <span class="admin-hero-stat-mini-value">{{ activas.length }}</span>
+          <span class="admin-hero-stat-mini-label">cursos matriculados</span>
+        </div>
+        <div class="admin-hero-stat-mini-divider"></div>
+        <div class="admin-hero-stat-mini">
+          <span class="admin-hero-stat-mini-value">{{ grados.length }}</span>
+          <span class="admin-hero-stat-mini-label">grados distintos</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  @if (loading) {
+    <app-loading-state label="Cargando tu información..."></app-loading-state>
+  } @else {
+    <!-- ═══ Metric Cards ═══ -->
+    <div class="admin-metrics-grid mb-4">
+      <div class="admin-metric-link" style="--metric-delay:0s">
+        <div class="admin-metric-card">
+          <div class="admin-metric-top" style="background:#10b98114;">
+            <div class="admin-metric-icon" style="background:#10b98122;color:var(--ie-success);">
+              <i class="bi bi-bookmark-check-fill"></i>
+            </div>
+            <div class="admin-metric-pulse" style="background:#10b98130;"></div>
+          </div>
+          <div class="admin-metric-body">
+            <div class="admin-metric-label">Cursos matriculados</div>
+            <div class="admin-metric-value">{{ activas.length }}</div>
+          </div>
+          <div class="admin-metric-footer">
+            <span class="admin-metric-action">
+              <i class="bi bi-journal-text me-1"></i>Ver cursos
+              <i class="bi bi-arrow-right ms-1"></i>
+            </span>
+          </div>
+        </div>
+      </div>
+      <div class="admin-metric-link" style="--metric-delay:0.05s">
+        <div class="admin-metric-card">
+          <div class="admin-metric-top" style="background:#f59e0b14;">
+            <div class="admin-metric-icon" style="background:#f59e0b22;color:var(--ie-accent);">
+              <i class="bi bi-layers-fill"></i>
+            </div>
+            <div class="admin-metric-pulse" style="background:#f59e0b30;"></div>
+          </div>
+          <div class="admin-metric-body">
+            <div class="admin-metric-label">Grados distintos</div>
+            <div class="admin-metric-value">{{ grados.length }}</div>
+          </div>
+          <div class="admin-metric-footer">
+            <span class="admin-metric-action">
+              <i class="bi bi-book me-1"></i>Ver detalle
+              <i class="bi bi-arrow-right ms-1"></i>
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ Charts & Analytics ═══ -->
+    <div class="row g-4 mb-4">
+      @if (grados.length > 0) {
+        <div class="col-lg-7">
+          <div class="admin-card">
+            <div class="admin-card-header">
+              <div class="d-flex align-items-center gap-3">
+                <div class="admin-card-icon" style="background:linear-gradient(135deg,#059669,#34d399);color:#fff;">
+                  <i class="bi bi-bar-chart-steps"></i>
+                </div>
+                <div>
+                  <h2 class="admin-card-title">Cursos por grado</h2>
+                  <span class="admin-card-subtitle">Distribución de tu carga académica</span>
+                </div>
+              </div>
+              <div class="admin-card-badge">
+                <span class="admin-card-badge-value">{{ activas.length }}</span>
+                <span class="admin-card-badge-label">cursos totales</span>
+              </div>
+            </div>
+            <div class="admin-card-body">
+              @for (g of grados; track g.grado; let i = $index) {
+                <div class="admin-bar-row" [style.--bar-delay]="i * 0.07 + 's'">
+                  <div class="admin-bar-label">
+                    <div class="admin-bar-label-text">
+                      <div class="admin-bar-dot" style="background:var(--ie-success);"></div>
+                      <span>{{ g.grado }}</span>
+                    </div>
+                    <div class="admin-bar-label-right">
+                      <span class="admin-bar-count">{{ g.count }} curso{{ g.count !== 1 ? 's' : '' }}</span>
+                      <span class="admin-bar-pct">{{ (g.count / maxGrado() * 100).toFixed(0) }}%</span>
+                    </div>
+                  </div>
+                  <div class="admin-bar-track">
+                    <div class="admin-bar-fill"
+                      [style.width.%]="(g.count / maxGrado()) * 100"
+                      style="background:var(--ie-success);">
+                    </div>
+                    <div class="admin-bar-glow" style="background:var(--ie-success);"
+                      [style.left.%]="(g.count / maxGrado()) * 100">
+                    </div>
+                  </div>
+                </div>
+              }
+            </div>
+          </div>
+        </div>
+      }
+
+      <div [class.col-lg-5]="grados.length > 0" [class.col-lg-12]="grados.length === 0">
+        <div class="admin-card">
+          <div class="admin-card-header">
+            <div class="d-flex align-items-center gap-3">
+              <div class="admin-card-icon" style="background:linear-gradient(135deg,#f59e0b,#d97706);color:#fff;">
+                <i class="bi bi-lightning-charge"></i>
+              </div>
+              <div>
+                <h2 class="admin-card-title">Accesos rápidos</h2>
+                <span class="admin-card-subtitle">Atajos a secciones clave</span>
+              </div>
+            </div>
+          </div>
+          <div class="admin-card-body">
+            <div class="d-flex flex-column gap-2">
+              @for (action of quickActions; track action.route) {
+                <a [routerLink]="action.route" class="admin-action-link">
+                  <div class="admin-action-card">
+                    <div class="admin-action-bg" [style.background]="action.gradient"></div>
+                    <div class="admin-action-content">
+                      <div class="admin-action-icon">
+                        <i class="bi {{ action.icon }}"></i>
+                      </div>
+                      <div class="admin-action-info">
+                        <div class="admin-action-title">{{ action.title }}</div>
+                        <div class="admin-action-desc">{{ action.desc }}</div>
+                      </div>
+                    </div>
+                    <div class="admin-action-arrow">
+                      <i class="bi bi-arrow-up-right"></i>
+                    </div>
+                  </div>
+                </a>
+              }
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  }
+</div>

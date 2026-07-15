@@ -1,0 +1,8 @@
+<app-entity-crud-page
+  [title]="title" [subtitle]="subtitle" [headerIcon]="headerIcon" [api]="api.grados" [idKey]="idKey"
+  [columns]="columns" [fields]="fields" [emptyForm]="emptyForm"
+  [canCreate]="true" [canEdit]="true" [canDelete]="true"
+  [sortOptions]="sortOptions" [defaultSort]="defaultSort"
+  [viewMode]="'cards'" [cardConfig]="cardConfig"
+  [cardColorRender]="getCardColor.bind(this)">
+</app-entity-crud-page>

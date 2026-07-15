@@ -1,0 +1,689 @@
+<div class="usuarios-page">
+  <!-- ═══ HEADER ═══ -->
+  <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+    <div>
+      <h1 class="font-display fw-bold h3 mb-1 d-flex align-items-center gap-2">
+        <span class="header-icon">
+          <i class="bi bi-shield-lock"></i>
+        </span>
+        Usuarios y roles
+      </h1>
+      <p class="text-ink-soft mb-0">Administra las cuentas de acceso y controla sus permisos.</p>
+    </div>
+    <button class="btn btn-accent px-4" (click)="showForm = true">
+      <i class="bi bi-plus-lg me-2"></i>Nuevo usuario
+    </button>
+  </div>
+
+  <!-- ═══ STATS CARDS ═══ -->
+  @if (!loading && !error) {
+  <div class="row g-3 mb-4 stats-row">
+    <div class="col-6 col-lg-3">
+      <div class="users-stat-card">
+        <div class="users-stat-icon" style="background:var(--ie-primary);color:#fff;">
+          <i class="bi bi-people"></i>
+        </div>
+        <div class="users-stat-body">
+          <div class="users-stat-value">{{ totalUsuarios }}</div>
+          <div class="users-stat-label">Total usuarios</div>
+        </div>
+      </div>
+    </div>
+    <div class="col-6 col-lg-3">
+      <div class="users-stat-card">
+        <div class="users-stat-icon" style="background:var(--ie-success);color:#fff;">
+          <i class="bi bi-check-circle"></i>
+        </div>
+        <div class="users-stat-body">
+          <div class="users-stat-value">{{ activos }}</div>
+          <div class="users-stat-label">Activos</div>
+        </div>
+      </div>
+    </div>
+    <div class="col-6 col-lg-3">
+      <div class="users-stat-card">
+        <div class="users-stat-icon" style="background:var(--ie-ink-muted);color:#fff;">
+          <i class="bi bi-x-circle"></i>
+        </div>
+        <div class="users-stat-body">
+          <div class="users-stat-value">{{ inactivos }}</div>
+          <div class="users-stat-label">Inactivos</div>
+        </div>
+      </div>
+    </div>
+    <div class="col-6 col-lg-3">
+      <div class="users-stat-card">
+        <div class="users-stat-icon" style="background:#7c3aed;color:#fff;">
+          <i class="bi bi-person-badge"></i>
+        </div>
+        <div class="users-stat-body">
+          <div class="users-stat-value">{{ roles.length }}</div>
+          <div class="users-stat-label">Roles disponibles</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  }
+
+  <!-- ═══ FILTERS ═══ -->
+  <div class="users-filters-card mb-3">
+    <div class="row g-2 align-items-center">
+      <div class="col-md-4">
+        <div class="search-wrapper">
+          <i class="bi bi-search search-icon"></i>
+          <input type="text" class="form-control search-input" placeholder="Buscar por usuario o correo..."
+            [(ngModel)]="search" (input)="applyFilter()" />
+          @if (search) {
+          <button class="search-clear" (click)="search = ''; applyFilter()" title="Limpiar">
+            <i class="bi bi-x-lg"></i>
+          </button>
+          }
+        </div>
+      </div>
+      <div class="col-md-6">
+        <div class="filter-pills">
+          <span class="filter-pill" [class.active]="rolFilter === 'TODOS'" (click)="rolFilter = 'TODOS'; applyFilter()">
+            <i class="bi bi-grid-3x3-gap-fill"></i> Todos
+          </span>
+          @for (r of roles; track r) {
+          <span class="filter-pill" [class.active]="rolFilter === r" (click)="rolFilter = r; applyFilter()">
+            @switch (r) {
+            @case ('ADMIN') { <i class="bi bi-shield-fill-check"></i> }
+            @case ('DIRECTOR') { <i class="bi bi-person-badge-fill"></i> }
+            @case ('DOCENTE') { <i class="bi bi-person-workspace"></i> }
+            @case ('ESTUDIANTE') { <i class="bi bi-mortarboard-fill"></i> }
+            }
+            {{ r.charAt(0) + r.slice(1).toLowerCase() }}
+          </span>
+          }
+        </div>
+      </div>
+    </div>
+    <!-- Active filter indicator -->
+    @if (rolFilter !== 'TODOS' || search) {
+    <div class="d-flex align-items-center gap-2 mt-2 pt-2 border-top"
+      style="border-color:var(--ie-line-light) !important;">
+      <span class="small text-ink-soft">Filtrado por:</span>
+      @if (rolFilter !== 'TODOS') {
+      <span class="users-active-filter">
+        <i class="bi bi-person-badge me-1"></i>{{ rolFilter.charAt(0) + rolFilter.slice(1).toLowerCase() }}
+        <button class="btn-close-sm" (click)="rolFilter = 'TODOS'; applyFilter()" title="Quitar filtro"></button>
+      </span>
+      }
+      @if (search) {
+      <span class="users-active-filter">
+        <i class="bi bi-search me-1"></i>"{{ search }}"
+        <button class="btn-close-sm" (click)="search = ''; applyFilter()" title="Quitar filtro"></button>
+      </span>
+      }
+      <button class="btn btn-sm btn-soft ms-auto px-2 py-0" style="font-size:0.75rem;"
+        (click)="search = ''; rolFilter = 'TODOS'; sortField = ''; applyFilter()">
+        <i class="bi bi-arrow-counterclockwise me-1"></i>Limpiar todo
+      </button>
+    </div>
+    }
+  </div>
+
+  <!-- ═══ LOADING ═══ -->
+  @if (loading) {
+  <div class="users-loading">
+    <div class="users-skeleton-header">
+      <div class="users-skeleton-line" style="width:30%;height:14px;"></div>
+      <div class="users-skeleton-line" style="width:50%;height:12px;margin-top:6px;"></div>
+    </div>
+    @for (item of [1,2,3,4]; track item) {
+    <div class="users-skeleton-row">
+      <div class="d-flex align-items-center gap-3">
+        <div class="users-skeleton-avatar"></div>
+        <div>
+          <div class="users-skeleton-line" style="width:140px;height:13px;"></div>
+          <div class="users-skeleton-line" style="width:100px;height:11px;margin-top:5px;"></div>
+        </div>
+      </div>
+      <div class="users-skeleton-line" style="width:160px;height:11px;"></div>
+      <div class="users-skeleton-line" style="width:70px;height:24px;border-radius:999px;"></div>
+      <div class="users-skeleton-line" style="width:50px;height:20px;border-radius:999px;"></div>
+      <div class="users-skeleton-line" style="width:80px;height:11px;"></div>
+      <div class="users-skeleton-line" style="width:60px;height:20px;"></div>
+    </div>
+    }
+  </div>
+  }
+
+  <!-- ═══ ERROR ═══ -->
+  @else if (error) {
+  <app-error-state [message]="error" (retry)="load()"></app-error-state>
+  }
+
+  <!-- ═══ TABLE ═══ -->
+  @else {
+  <div class="users-table-card">
+    <div class="users-table-header">
+      <div class="d-flex align-items-center gap-2">
+        <i class="bi bi-list-columns" style="color:var(--ie-ink-muted);"></i>
+        <span class="fw-semibold small text-ink-soft">{{ filtered.length }} usuario{{ filtered.length !== 1 ? 's' : ''
+          }}</span>
+        @if (filtered.length !== usuarios.length) {
+        <span class="text-ink-muted small">(de {{ usuarios.length }})</span>
+        }
+      </div>
+      <div class="d-flex align-items-center gap-2">
+        @if (filtered.length > 0) {
+        <span class="table-badge table-badge-active">{{ activosFiltrados }} activos</span>
+        <span class="table-badge table-badge-inactive">{{ filtered.length - activosFiltrados }} inactivos</span>
+        }
+      </div>
+    </div>
+    <div class="table-responsive">
+      <table class="users-table">
+        <thead>
+          <tr>
+            <th style="width:50px;">#</th>
+            <th>Usuario</th>
+            <th>Correo electrónico</th>
+            <th>Rol</th>
+            <th>Estado</th>
+            <th>Último acceso</th>
+            <th style="width:170px;" class="text-end">Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          @if (filtered.length === 0) {
+          <tr>
+            <td colspan="7">
+              <div class="users-empty">
+                <div class="users-empty-icon">
+                  <i class="bi bi-search"></i>
+                </div>
+                <h4 class="font-display fw-bold h6 mb-1">Sin resultados</h4>
+                <p class="small text-ink-soft mb-0">
+                  @if (search && rolFilter !== 'TODOS') {
+                  No hay usuarios que coincidan con "{{ search }}" y el rol seleccionado.
+                  } @else if (search) {
+                  No hay usuarios que coincidan con "{{ search }}".
+                  } @else if (rolFilter !== 'TODOS') {
+                  No hay usuarios con el rol seleccionado.
+                  } @else {
+                  Aún no hay usuarios registrados.
+                  }
+                </p>
+              </div>
+            </td>
+          </tr>
+          }
+          @for (u of filtered; track u.idUsuario; let i = $index) {
+          <tr class="users-row">
+            <td class="text-mono text-ink-muted">
+              <span class="d-inline-flex align-items-center gap-1">
+                <span style="font-size:0.7rem;">#</span>{{ u.idUsuario }}
+              </span>
+            </td>
+            <td>
+              <div class="d-flex align-items-center gap-3">
+                @if (u.fotoUrl) {
+                  <div class="position-relative">
+                    <img [src]="normalizeFotoUrl(u.fotoUrl)" alt="Foto" class="users-avatar"
+                      style="object-fit:cover;cursor:pointer;" (error)="onTableFotoError(u)"
+                      (click)="openLightbox(normalizeFotoUrl(u.fotoUrl))"
+                      [class]="'role-' + (u.rol || 'ESTUDIANTE').toLowerCase()"
+                      [title]="'Ver foto completa'">
+                    <button class="users-avatar-eye" (click)="openLightbox(normalizeFotoUrl(u.fotoUrl))" title="Ver foto completa">
+                      <i class="bi bi-eye"></i>
+                    </button>
+                  </div>
+                } @else {
+                  <div class="users-avatar" [class]="'role-' + (u.rol || 'ESTUDIANTE').toLowerCase()">
+                    {{ (u.username || '?')[0] | uppercase }}
+                  </div>
+                }
+                <div>
+                  <div class="fw-semibold text-dark">{{ u.username }}</div>
+                  <div class="small text-ink-soft" style="font-size:0.72rem;">ID: #{{ u.idUsuario }}</div>
+                </div>
+              </div>
+            </td>
+            <td>
+              <span class="users-email">{{ u.email }}</span>
+            </td>
+            <td>
+              <span class="users-role-badge" [class]="'role-' + (u.rol || 'ESTUDIANTE').toLowerCase()">
+                <i class="bi" [class.bi-shield-fill-check]="u.rol === 'ADMIN'"
+                  [class.bi-person-badge-fill]="u.rol === 'DIRECTOR'" [class.bi-person-workspace]="u.rol === 'DOCENTE'"
+                  [class.bi-mortarboard-fill]="u.rol === 'ESTUDIANTE'"></i>
+                {{ u.rol }}
+              </span>
+            </td>
+            <td>
+              <div class="d-flex align-items-center gap-2">
+                <label class="users-toggle users-status-toggle" [class.active]="!!u.activo" [title]="u.activo ? 'Desactivar usuario' : 'Activar usuario'">
+                  <input type="checkbox" [checked]="!!u.activo" (change)="toggleActivo(u)" />
+                  <span class="users-toggle-slider"></span>
+                </label>
+                @if (u.activo) {
+                <span class="users-status users-status-active">
+                  <span class="users-status-dot" style="background:var(--ie-success);"></span>
+                  Activo
+                </span>
+                } @else {
+                <span class="users-status users-status-inactive">
+                  <span class="users-status-dot" style="background:var(--ie-ink-muted);"></span>
+                  Inactivo
+                </span>
+                }
+              </div>
+            </td>
+            <td class="text-ink-soft small">
+              @if (u.ultimoAcceso) {
+              <span class="d-flex align-items-center gap-1">
+                <i class="bi bi-clock-history" style="font-size:0.75rem;"></i>
+                {{ u.ultimoAcceso | date:'dd/MM/yyyy HH:mm' }}
+              </span>
+              } @else {
+              <span class="text-ink-muted">—</span>
+              }
+            </td>                <td class="text-end">
+                  <div class="users-actions">
+                    <button class="users-action-btn info" (click)="openDetail(u)" title="Ver detalle">
+                      <i class="bi bi-eye"></i>
+                    </button>
+                    <button class="users-action-btn warning" (click)="openEdit(u)" title="Editar usuario">
+                      <i class="bi bi-pencil"></i>
+                    </button>
+                    <button class="users-action-btn danger" (click)="eliminar(u)" title="Eliminar usuario">
+                      <i class="bi bi-trash3"></i>
+                    </button>
+                  </div>
+                </td>
+          </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </div>
+  }
+
+  <!-- ═══ CREATE MODAL ═══ -->
+  @if (showForm) {
+  <div class="modal d-block" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+      <div class="modal-content">
+        <form (ngSubmit)="handleCreate()">
+          <div class="modal-header">
+            <div class="d-flex align-items-center gap-3">
+              <div class="modal-header-icon">
+                <i class="bi bi-person-plus-fill"></i>
+              </div>
+              <div>
+                <h5 class="modal-title font-display fw-bold mb-0">Crear nuevo usuario</h5>
+                <p class="small text-ink-soft mb-0">Completa los campos para registrar una nueva cuenta.</p>
+              </div>
+            </div>
+            <button type="button" class="btn-close" (click)="showForm = false" [disabled]="saving"></button>
+          </div>
+          <div class="modal-body">
+            @if (formError) {
+            <div class="users-form-alert">
+              <i class="bi bi-exclamation-circle me-2"></i>{{ formError }}
+            </div>
+            }
+            <div class="row g-4">
+              <div class="col-md-6">
+                <label class="users-field-label">
+                  <i class="bi bi-person me-1"></i>Nombre de usuario <span class="text-danger">*</span>
+                </label>
+                <input class="users-field" [class.is-invalid]="formErrors.username" [(ngModel)]="form.username"
+                  name="username" [disabled]="saving" placeholder="ej: jperez" />
+                @if (formErrors.username) {
+                <div class="invalid-feedback d-block">
+                  <i class="bi bi-exclamation-circle me-1"></i>{{ formErrors.username }}
+                </div>
+                }
+              </div>
+              <div class="col-md-6">
+                <label class="users-field-label">
+                  <i class="bi bi-envelope me-1"></i>Correo electrónico <span class="text-danger">*</span>
+                </label>
+                <input type="email" class="users-field" [class.is-invalid]="formErrors.email" [(ngModel)]="form.email"
+                  name="email" [disabled]="saving" placeholder="ej: usuario@colegio.edu.pe" />
+                @if (formErrors.email) {
+                <div class="invalid-feedback d-block">
+                  <i class="bi bi-exclamation-circle me-1"></i>{{ formErrors.email }}
+                </div>
+                }
+              </div>
+              <div class="col-md-6">
+                <label class="users-field-label">
+                  <i class="bi bi-key me-1"></i>Contraseña <span class="text-danger">*</span>
+                </label>
+                <div class="password-wrapper">
+                  <input [type]="showPassword ? 'text' : 'password'" class="users-field pe-5"
+                    [class.is-invalid]="formErrors.password" [(ngModel)]="form.password" name="password"
+                    [disabled]="saving" placeholder="Mínimo 6 caracteres" />
+                  <button type="button" class="password-toggle" (click)="showPassword = !showPassword" tabindex="-1">
+                    <i class="bi" [class.bi-eye]="!showPassword" [class.bi-eye-slash]="showPassword"></i>
+                  </button>
+                </div>
+                @if (formErrors.password) {
+                <div class="invalid-feedback d-block">
+                  <i class="bi bi-exclamation-circle me-1"></i>{{ formErrors.password }}
+                </div>
+                }
+                @if (form.password && form.password.length > 0 && !formErrors.password) {
+                <div class="password-strength mt-1">
+                  <div class="password-strength-bar" [style.width.%]="passwordStrength"
+                    [style.background]="passwordStrength < 40 ? 'var(--ie-danger)' : passwordStrength < 70 ? 'var(--ie-warning)' : 'var(--ie-success)'">
+                  </div>
+                  <span class="small text-ink-soft" style="font-size:0.7rem;">
+                    {{ passwordStrength < 40 ? 'Débil' : passwordStrength < 70 ? 'Media' : 'Fuerte' }} </span>
+                </div>
+                }
+              </div>
+              <div class="col-md-6">
+                <label class="users-field-label">
+                  <i class="bi bi-person-badge me-1"></i>Rol <span class="text-danger">*</span>
+                </label>
+                <div class="role-select-grid">
+                  @for (r of roles; track r) {
+                  <div class="role-option" [class.selected]="form.rol === r" (click)="form.rol = r">
+                    <div class="role-option-icon" [class]="'role-' + r.toLowerCase()">
+                      @switch (r) {
+                      @case ('ADMIN') { <i class="bi bi-shield-fill-check"></i> }
+                      @case ('DIRECTOR') { <i class="bi bi-person-badge-fill"></i> }
+                      @case ('DOCENTE') { <i class="bi bi-person-workspace"></i> }
+                      @case ('ESTUDIANTE') { <i class="bi bi-mortarboard-fill"></i> }
+                      }
+                    </div>
+                    <div class="role-option-label">{{ r.charAt(0) + r.slice(1).toLowerCase() }}</div>
+                    @if (form.rol === r) {
+                    <div class="role-check">
+                      <i class="bi bi-check-circle-fill"></i>
+                    </div>
+                    }
+                  </div>
+                  }
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-soft px-4" (click)="showForm = false"
+              [disabled]="saving">Cancelar</button>
+            <button type="submit" class="btn btn-accent px-4" [disabled]="saving">
+              @if (saving) {
+              <span class="spinner-border spinner-border-sm me-2"></span> Creando...
+              } @else {
+              <i class="bi bi-check-lg me-2"></i>Crear usuario
+              }
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+  <div class="modal-backdrop show"></div>
+  }
+
+  <!-- ═══ EDIT MODAL ═══ -->
+  @if (showEditForm && editingUser) {
+    <div class="modal d-block" tabindex="-1">
+      <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content">
+          <form (ngSubmit)="handleUpdate()">
+            <div class="modal-header">
+              <div class="d-flex align-items-center gap-3">
+                <div class="modal-header-icon" style="background:var(--ie-info-soft);color:var(--ie-info);">
+                  <i class="bi bi-pencil-fill"></i>
+                </div>
+                <div>
+                  <h5 class="modal-title font-display fw-bold mb-0">Editar usuario</h5>
+                  <p class="small text-ink-soft mb-0">Modifica los datos de <strong>{{ editingUser.username }}</strong>.</p>
+                </div>
+              </div>
+              <button type="button" class="btn-close" (click)="showEditForm = false" [disabled]="savingEdit"></button>
+            </div>
+            <div class="modal-body">
+              @if (editFormError) {
+                <div class="users-form-alert">
+                  <i class="bi bi-exclamation-circle me-2"></i>{{ editFormError }}
+                </div>
+              }
+              <div class="row g-4">
+                <div class="col-md-6">
+                  <label class="users-field-label">
+                    <i class="bi bi-person me-1"></i>Nombre de usuario <span class="text-danger">*</span>
+                  </label>
+                  <input class="users-field" [class.is-invalid]="editFormErrors.username" [(ngModel)]="editForm.username" name="edit-username" [disabled]="savingEdit" placeholder="ej: jperez" />
+                  @if (editFormErrors.username) {
+                    <div class="invalid-feedback d-block">
+                      <i class="bi bi-exclamation-circle me-1"></i>{{ editFormErrors.username }}
+                    </div>
+                  }
+                </div>
+                <div class="col-md-6">
+                  <label class="users-field-label">
+                    <i class="bi bi-envelope me-1"></i>Correo electrónico <span class="text-danger">*</span>
+                  </label>
+                  <input type="email" class="users-field" [class.is-invalid]="editFormErrors.email" [(ngModel)]="editForm.email" name="edit-email" [disabled]="savingEdit" placeholder="ej: usuario@colegio.edu.pe" />
+                  @if (editFormErrors.email) {
+                    <div class="invalid-feedback d-block">
+                      <i class="bi bi-exclamation-circle me-1"></i>{{ editFormErrors.email }}
+                    </div>
+                  }
+                </div>
+                <div class="col-md-12">
+                  <label class="users-field-label">
+                    <i class="bi bi-person-badge me-1"></i>Rol <span class="text-danger">*</span>
+                  </label>
+                  <div class="role-select-grid">
+                    @for (r of roles; track r) {
+                      <div class="role-option" [class.selected]="editForm.rol === r" (click)="editForm.rol = r">
+                        <div class="role-option-icon" [class]="'role-' + r.toLowerCase()">
+                          @switch (r) {
+                            @case ('ADMIN') { <i class="bi bi-shield-fill-check"></i> }
+                            @case ('DIRECTOR') { <i class="bi bi-person-badge-fill"></i> }
+                            @case ('DOCENTE') { <i class="bi bi-person-workspace"></i> }
+                            @case ('ESTUDIANTE') { <i class="bi bi-mortarboard-fill"></i> }
+                          }
+                        </div>
+                        <div class="role-option-label">{{ r.charAt(0) + r.slice(1).toLowerCase() }}</div>
+                        @if (editForm.rol === r) {
+                          <div class="role-check">
+                            <i class="bi bi-check-circle-fill"></i>
+                          </div>
+                        }
+                      </div>
+                    }
+                  </div>
+                </div>
+              </div>
+              <!-- ═══ Foto de perfil ═══ -->
+              <hr class="my-3">
+              <div>
+                <label class="users-field-label mb-2">
+                  <i class="bi bi-camera me-1"></i>Foto de perfil
+                </label>
+                <div class="d-flex align-items-center gap-3">
+                  <div class="position-relative">
+                    @if (editPreviewUrl) {
+                      <img [src]="editPreviewUrl" alt="Foto" class="rounded-circle"
+                        style="width:64px;height:64px;object-fit:cover;border:2px solid var(--ie-line);box-shadow:var(--ie-shadow-sm);cursor:pointer;"
+                        (error)="editPreviewUrl = null"
+                        (click)="openLightbox(editPreviewUrl)">
+                      <button class="users-avatar-eye" style="position:absolute;top:-4px;right:-4px;"
+                        (click)="openLightbox(editPreviewUrl)" title="Ver foto completa">
+                        <i class="bi bi-eye"></i>
+                      </button>
+                    } @else if (editingUser?.fotoUrl) {
+                      <img [src]="normalizeFotoUrl(editingUser.fotoUrl)" alt="Foto" class="rounded-circle"
+                        style="width:64px;height:64px;object-fit:cover;border:2px solid var(--ie-line);box-shadow:var(--ie-shadow-sm);cursor:pointer;"
+                        (error)="editingUser.fotoUrl = null"
+                        (click)="openLightbox(normalizeFotoUrl(editingUser.fotoUrl))">
+                      <button class="users-avatar-eye" style="position:absolute;top:-4px;right:-4px;"
+                        (click)="openLightbox(normalizeFotoUrl(editingUser.fotoUrl))" title="Ver foto completa">
+                        <i class="bi bi-eye"></i>
+                      </button>
+                    } @else {
+                      <div class="users-avatar" style="width:64px;height:64px;font-size:1.3rem;" [class]="'role-' + (editingUser?.rol || 'ESTUDIANTE').toLowerCase()">
+                        {{ (editingUser?.username || '?')[0] | uppercase }}
+                      </div>
+                    }
+                  </div>
+                  <div class="d-flex flex-column gap-1">
+                    <button type="button" class="btn btn-sm btn-soft" (click)="triggerEditFotoInput()" [disabled]="uploadingFoto">
+                      <i class="bi bi-camera me-1"></i>
+                      @if (editPreviewUrl || editingUser?.fotoUrl) {
+                        Cambiar foto
+                      } @else {
+                        Subir foto
+                      }
+                    </button>
+                    @if (editPreviewUrl || editingUser?.fotoUrl) {
+                      <button type="button" class="btn btn-sm btn-outline-danger" (click)="eliminarFotoUsuario()" [disabled]="uploadingFoto">
+                        <i class="bi bi-trash3 me-1"></i>Eliminar foto
+                      </button>
+                    }
+                    @if (uploadingFoto) {
+                      <small class="text-ink-soft">
+                        <span class="spinner-border spinner-border-sm me-1" style="width:0.75rem;height:0.75rem;"></span>
+                        Subiendo...
+                      </small>
+                    }
+                  </div>
+                  <input id="editFotoInput" type="file" accept="image/*" class="d-none" (change)="onEditFotoSelected($event)" />
+                </div>
+              </div>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-soft px-4" (click)="showEditForm = false" [disabled]="savingEdit">Cancelar</button>
+              <button type="submit" class="btn btn-primary px-4" [disabled]="savingEdit">
+                @if (savingEdit) {
+                  <span class="spinner-border spinner-border-sm me-2"></span> Guardando...
+                } @else {
+                  <i class="bi bi-check-lg me-2"></i>Guardar cambios
+                }
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+    <div class="modal-backdrop show"></div>
+  }
+
+  <!-- ═══ DETAIL MODAL ═══ -->
+  @if (showDetail && detailUser) {
+    <div class="modal d-block" tabindex="-1">
+      <div class="modal-dialog modal-dialog-centered" style="max-width:520px;">
+        <div class="modal-content">
+          <div class="modal-header">
+            <div class="d-flex align-items-center gap-3">
+              <div class="users-avatar" style="width:44px;height:44px;font-size:0.95rem;" [class]="'role-' + (detailUser.rol || 'ESTUDIANTE').toLowerCase()">
+                {{ (detailUser.username || '?')[0] | uppercase }}
+              </div>
+              <div>
+                <h5 class="modal-title font-display fw-bold mb-0">{{ detailUser.username }}</h5>
+                <p class="small text-ink-soft mb-0">Detalles del usuario</p>
+              </div>
+            </div>
+            <button type="button" class="btn-close" (click)="showDetail = false"></button>
+          </div>
+          <div class="modal-body">              <!-- Profile Photo -->
+              <div class="text-center mb-4">
+                @if (detailFotos[detailUser.idUsuario] || detailUser.fotoUrl) {
+                  <div class="position-relative d-inline-block">
+                    <img [src]="detailFotos[detailUser.idUsuario] || normalizeFotoUrl(detailUser.fotoUrl)" alt="Foto"
+                      class="rounded-circle"
+                      style="width:80px;height:80px;object-fit:cover;border:3px solid var(--ie-line);box-shadow:var(--ie-shadow-md);cursor:pointer;"
+                      (error)="onDetailFotoError()"
+                      (click)="openLightbox(detailFotos[detailUser.idUsuario] || normalizeFotoUrl(detailUser.fotoUrl))">
+                    <button class="users-avatar-eye" style="position:absolute;top:-4px;right:-4px;"
+                      (click)="openLightbox(detailFotos[detailUser.idUsuario] || normalizeFotoUrl(detailUser.fotoUrl))" title="Ver foto completa">
+                      <i class="bi bi-eye"></i>
+                    </button>
+                  </div>
+                } @else {
+                  <div class="users-avatar" style="width:80px;height:80px;font-size:1.8rem;margin:0 auto;" [class]="'role-' + (detailUser.rol || 'ESTUDIANTE').toLowerCase()">
+                    {{ (detailUser.username || '?')[0] | uppercase }}
+                  </div>
+                }
+              </div>
+              <div class="detail-grid">
+              <div class="detail-item">
+                <span class="detail-label"><i class="bi bi-hash"></i> ID</span>
+                <span class="detail-value">{{ detailUser.idUsuario }}</span>
+              </div>
+              <div class="detail-item">
+                <span class="detail-label"><i class="bi bi-person"></i> Usuario</span>
+                <span class="detail-value">{{ detailUser.username }}</span>
+              </div>
+              <div class="detail-item">
+                <span class="detail-label"><i class="bi bi-envelope"></i> Correo</span>
+                <span class="detail-value">{{ detailUser.email || '—' }}</span>
+              </div>
+              <div class="detail-item">
+                <span class="detail-label"><i class="bi bi-person-badge"></i> Rol</span>
+                <span class="detail-value">
+                  <span class="users-role-badge" [class]="'role-' + (detailUser.rol || 'ESTUDIANTE').toLowerCase()">
+                    <i class="bi" [class.bi-shield-fill-check]="detailUser.rol === 'ADMIN'" [class.bi-person-badge-fill]="detailUser.rol === 'DIRECTOR'" [class.bi-person-workspace]="detailUser.rol === 'DOCENTE'" [class.bi-mortarboard-fill]="detailUser.rol === 'ESTUDIANTE'"></i>
+                    {{ detailUser.rol }}
+                  </span>
+                </span>
+              </div>
+              <div class="detail-item">
+                <span class="detail-label"><i class="bi bi-toggle-on"></i> Estado</span>
+                <span class="detail-value">
+                  @if (detailUser.activo) {
+                    <span class="users-status users-status-active">
+                      <span class="users-status-dot" style="background:var(--ie-success);"></span> Activo
+                    </span>
+                  } @else {
+                    <span class="users-status users-status-inactive">
+                      <span class="users-status-dot" style="background:var(--ie-ink-muted);"></span> Inactivo
+                    </span>
+                  }
+                </span>
+              </div>
+              <div class="detail-item">
+                <span class="detail-label"><i class="bi bi-clock-history"></i> Último acceso</span>
+                <span class="detail-value">{{ detailUser.ultimoAcceso ? (detailUser.ultimoAcceso | date:'dd/MM/yyyy HH:mm') : '—' }}</span>
+              </div>
+            </div>
+          </div>
+          <div class="modal-footer d-flex justify-content-between">
+            <button class="btn btn-soft px-4" (click)="showDetail = false">Cerrar</button>
+            <button class="btn btn-primary px-4" (click)="showDetail = false; openEdit(detailUser)">
+              <i class="bi bi-pencil me-2"></i>Editar usuario
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="modal-backdrop show"></div>
+  }
+
+  <!-- ═══ LIGHTBOX MODAL ═══ -->
+  @if (lightboxUrl) {
+    <div class="modal d-block" tabindex="-1" (click)="closeLightbox()">
+      <div class="modal-dialog modal-dialog-centered modal-xl" style="max-width:90vw;" (click)="$event.stopPropagation()">
+        <div class="modal-content" style="background:transparent;border:none;box-shadow:none;">
+          <div class="text-end mb-2">
+            <button type="button" class="btn btn-sm rounded-circle" style="width:36px;height:36px;background:rgba(0,0,0,0.5);color:#fff;border:none;" (click)="closeLightbox()">
+              <i class="bi bi-x-lg"></i>
+            </button>
+          </div>
+          <div class="text-center">
+            <img [src]="lightboxUrl" alt="Foto de perfil" style="max-width:100%;max-height:70vh;border-radius:12px;box-shadow:0 20px 60px rgba(0,0,0,0.3);" (click)="$event.stopPropagation()">
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="modal-backdrop show" style="background:rgba(0,0,0,0.8);backdrop-filter:blur(8px);"></div>
+  }
+
+  <!-- ═══ ALERT MODAL ═══ -->
+  @if (alertMessage) {
+  <app-confirm-modal [show]="true" [title]="alertTitle" [message]="alertMessage" confirmLabel="Entendido"
+    confirmVariant="primary" (confirm)="alertMessage = ''; alertTitle = ''"
+    (cancel)="alertMessage = ''; alertTitle = ''"></app-confirm-modal>
+  }
+</div>

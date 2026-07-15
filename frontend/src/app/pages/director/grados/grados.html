@@ -1,0 +1,9 @@
+<app-entity-crud-page
+  [title]="title" [subtitle]="subtitle" [api]="api.grados" [idKey]="idKey"
+  [columns]="columns" [fields]="fields" [emptyForm]="emptyForm"
+  [canCreate]="true" [canEdit]="true" [canDelete]="canDelete"
+  [headerIcon]="'bi-ladder'" [accentColor]="'#8b5cf6'" [entityLabel]="'grado'"
+  [rowCountLabel]="'Grados académicos'"
+  [colorGradient]="'linear-gradient(135deg, #8b5cf6, #a78bfa)'" [showRowNumber]="true"
+  [viewMode]="'cards'" [cardConfig]="cardConfig" [cardColorRender]="getCardColor.bind(this)">
+</app-entity-crud-page>

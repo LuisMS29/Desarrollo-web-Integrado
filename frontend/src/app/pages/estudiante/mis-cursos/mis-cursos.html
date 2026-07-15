@@ -1,0 +1,28 @@
+<div>
+  <div class="mb-4">
+    <h1 class="font-display fw-bold h3 mb-1">Mis cursos</h1>
+    <p class="text-secondary mb-0">Cursos en los que estás matriculado.</p>
+  </div>
+
+  @if (loading) {
+    <app-loading-state label="Cargando tus cursos..."></app-loading-state>
+  } @else if (matriculas.length === 0) {
+    <div class="ie-card p-4 text-center py-5"><p class="text-secondary mb-0">No estás matriculado en ningún curso.</p></div>
+  } @else {
+    <div class="row g-3">
+      @for (m of matriculas; track m.idMatricula) {
+        <div class="col-md-6 col-xl-4">
+          <div class="ie-card p-3 h-100">
+            <div class="mb-2">
+              <span class="badge-rol ESTUDIANTE mb-2 d-inline-block">{{ m.curso?.grado?.nombre ?? '—' }}{{ m.curso?.seccion?.nombre ?? '' }}</span>
+              <h3 class="font-display h6 fw-bold mb-0">{{ m.curso?.asignatura?.nombre ?? '—' }}</h3>
+              <div class="small text-secondary">
+                Docente: {{ m.curso?.docente ? (m.curso.docente.nombres + ' ' + m.curso.docente.apellidos) : '—' }}
+              </div>
+            </div>
+          </div>
+        </div>
+      }
+    </div>
+  }
+</div>

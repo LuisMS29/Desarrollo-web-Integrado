@@ -1,0 +1,67 @@
+<div>
+  <!-- Search -->
+  <div class="com-feed-search mb-3">
+    <i class="bi bi-search com-feed-search-icon"></i>
+    <input type="text" class="com-feed-search-input" placeholder="Buscar comunicados..." [(ngModel)]="search" (input)="applyFilter()" />
+    @if (search) {
+      <button class="com-feed-search-clear" (click)="search = ''; applyFilter()">
+        <i class="bi bi-x-lg"></i>
+      </button>
+    }
+  </div>
+
+  @if (loading) {
+    <app-loading-state label="Cargando comunicados..."></app-loading-state>
+  } @else if (error) {
+    <app-error-state [message]="error" (retry)="load()"></app-error-state>
+  } @else if (filtered.length === 0) {
+    <div class="com-feed-empty">
+      <div class="com-feed-empty-icon">
+        <i class="bi bi-megaphone"></i>
+      </div>
+      <h4 class="font-display fw-bold h6 mb-1">
+        {{ search ? 'Sin resultados' : 'Sin comunicados' }}
+      </h4>
+      <p class="small text-ink-soft mb-0">
+        {{ search ? 'No hay comunicados que coincidan con la búsqueda.' : 'No hay comunicados vigentes por el momento.' }}
+      </p>
+    </div>
+  } @else {
+    <div class="com-feed-list">
+      @for (c of filtered; track c.idComunicado) {
+        <div class="com-feed-card">
+          <div class="com-feed-card-top">
+            <div class="com-feed-card-icon">
+              <i class="bi bi-megaphone-fill"></i>
+            </div>
+            <div class="com-feed-card-meta">
+              <h3 class="com-feed-card-title">{{ c.titulo }}</h3>
+              <div class="com-feed-card-date">
+                <i class="bi bi-calendar3 me-1"></i>
+                {{ c.fechaPublicacion ? (c.fechaPublicacion | date:'dd MMM yyyy') : '' }}
+              </div>
+            </div>
+          </div>
+          <div class="com-feed-card-body">
+            <p class="com-feed-card-text">{{ c.contenido }}</p>
+          </div>
+          <div class="com-feed-card-footer">
+            <span class="com-feed-card-badge" [class.com-feed-badge-todos]="c.dirigidoA === 'TODOS'"
+              [class.com-feed-badge-docente]="c.dirigidoA === 'DOCENTE'"
+              [class.com-feed-badge-estudiante]="c.dirigidoA === 'ESTUDIANTE'"
+              [class.com-feed-badge-director]="c.dirigidoA === 'DIRECTOR'">
+              <i class="bi {{ c.dirigidoA === 'TODOS' ? 'bi-globe2' : c.dirigidoA === 'DOCENTE' ? 'bi-person-video3' : c.dirigidoA === 'ESTUDIANTE' ? 'bi-mortarboard' : 'bi-person-badge' }} me-1"></i>
+              {{ c.dirigidoA === 'TODOS' ? 'Todos' : c.dirigidoA.charAt(0) + c.dirigidoA.slice(1).toLowerCase() }}
+            </span>
+            @if (c.usuarioAutor?.username) {
+              <span class="com-feed-card-author">
+                <i class="bi bi-person-circle me-1"></i>
+                {{ c.usuarioAutor.username }}
+              </span>
+            }
+          </div>
+        </div>
+      }
+    </div>
+  }
+</div>

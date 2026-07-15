@@ -1,0 +1,30 @@
+@if (show) {
+  <div class="modal d-block" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered" style="max-width:420px;">
+      <div class="modal-content">
+        <div class="modal-body text-center py-4">
+          @if (confirmVariant === 'danger') {
+            <div class="mb-3" style="width:56px;height:56px;border-radius:999px;background:var(--ie-danger-soft);display:flex;align-items:center;justify-content:center;margin:0 auto;">
+              <i class="bi bi-exclamation-triangle" style="color:var(--ie-danger);font-size:1.5rem;"></i>
+            </div>
+          } @else {
+            <div class="mb-3" style="width:56px;height:56px;border-radius:999px;background:var(--ie-accent-soft);display:flex;align-items:center;justify-content:center;margin:0 auto;">
+              <i class="bi bi-info-circle" style="color:var(--ie-accent);font-size:1.5rem;"></i>
+            </div>
+          }
+          <h5 class="font-display fw-bold mb-2">{{ title }}</h5>
+          <p class="text-ink-soft small mb-0">{{ message }}</p>
+        </div>
+        <div class="d-flex gap-2 justify-content-center px-4 pb-4">
+          <button type="button" class="btn btn-soft px-4" (click)="cancel.emit()" [disabled]="loading">Cancelar</button>
+          <button type="button" class="btn" [class.btn-primary]="confirmVariant==='primary'" [class.btn-danger]="confirmVariant==='danger'" (click)="confirm.emit()" [disabled]="loading">
+            @if (loading) {
+              <span class="spinner-border spinner-border-sm me-1"></span> Procesando...
+            } @else { {{ confirmLabel }} }
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="modal-backdrop show"></div>
+}

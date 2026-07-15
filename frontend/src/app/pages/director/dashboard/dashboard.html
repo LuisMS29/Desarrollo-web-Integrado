@@ -1,0 +1,214 @@
+<div class="dashboard-page stagger-children">
+  <!-- ═══ Welcome Hero (Admin style) ═══ -->
+  <div class="admin-hero mb-4">
+    <div class="admin-hero-glow"></div>
+    <div class="admin-hero-bg-shape admin-hero-shape-1"></div>
+    <div class="admin-hero-bg-shape admin-hero-shape-2"></div>
+    <div class="position-relative d-flex flex-wrap align-items-center justify-content-between gap-3">
+      <div class="d-flex align-items-center gap-3">
+        <div class="admin-hero-avatar">
+          <span>{{ auth.user()?.username?.charAt(0)?.toUpperCase() || 'D' }}</span>
+        </div>
+        <div>
+          <div class="d-flex align-items-center gap-2 mb-1">
+            <h1 class="admin-hero-title mb-0">
+              <i class="bi {{ greetingIcon }} me-2"></i>{{ greeting }}
+            </h1>
+            <span class="admin-hero-badge">
+              <i class="bi bi-person-badge me-1"></i>Dirección
+            </span>
+          </div>
+          <p class="admin-hero-subtitle mb-0">
+            Bienvenido de vuelta, <strong>{{ auth.user()?.username }}</strong> &mdash; Panel de gestión académica institucional
+          </p>
+        </div>
+      </div>
+      <div class="d-flex align-items-center gap-3">
+        @if (periodoActivo) {
+          <div class="admin-hero-stats-mini">
+            <div class="admin-hero-stat-mini">
+              <span class="admin-hero-stat-mini-value" style="font-size:0.9rem;">{{ periodoActivo.nombre }}</span>
+              <span class="admin-hero-stat-mini-label">{{ periodoActivo.anio }}</span>
+            </div>
+            <div class="admin-hero-stat-mini-divider"></div>
+            <div class="admin-hero-stat-mini">
+              <span class="admin-hero-stat-mini-value">{{ statConfig.reduce((s, c) => s + (counts[c.key] || 0), 0) || '—' }}</span>
+              <span class="admin-hero-stat-mini-label">registros totales</span>
+            </div>
+          </div>
+        } @else {
+          <div class="admin-hero-stats-mini">
+            <div class="admin-hero-stat-mini">
+              <span class="admin-hero-stat-mini-value">{{ statConfig.reduce((s, c) => s + (counts[c.key] || 0), 0) || '—' }}</span>
+              <span class="admin-hero-stat-mini-label">registros totales</span>
+            </div>
+          </div>
+        }
+      </div>
+    </div>
+  </div>
+
+  @if (loading) {
+    <app-loading-state label="Cargando indicadores..."></app-loading-state>
+  } @else {
+    @if (failedResources.length > 0) {
+      <div class="alert alert-warning small d-flex align-items-center gap-2 mb-4">
+        <i class="bi bi-exclamation-triangle"></i>
+        <span>No se pudieron cargar algunos indicadores ({{ failedResources.join(', ') }}). Verifica que el backend esté disponible.</span>
+      </div>
+    }
+
+    <!-- ═══ Metric Cards Grid (Admin style) ═══ -->
+    <div class="admin-metrics-grid mb-4">
+      @for (stat of statConfig; track stat.key; let i = $index) {
+        <a [routerLink]="stat.link" class="admin-metric-link" [style.--metric-delay]="i * 0.06 + 's'">
+          <div class="admin-metric-card">
+            <div class="admin-metric-top" [style.background]="stat.accent + '14'">
+              <div class="admin-metric-icon" [style.background]="stat.accent + '22'" [style.color]="stat.accent">
+                <i class="bi {{ stat.icon }}"></i>
+              </div>
+              <div class="admin-metric-pulse" [style.background]="stat.accent + '30'"></div>
+            </div>
+            <div class="admin-metric-body">
+              <div class="admin-metric-label">{{ stat.label }}</div>
+              <div class="admin-metric-value">{{ counts[stat.key] === null ? '—' : counts[stat.key] }}</div>
+            </div>
+            <div class="admin-metric-footer">
+              <span class="admin-metric-action">
+                Ver detalle
+                <i class="bi bi-arrow-right ms-1"></i>
+              </span>
+            </div>
+          </div>
+        </a>
+      }
+    </div>
+
+    <!-- ═══ Charts & Analytics ═══ -->
+    <div class="row g-4 mb-4">
+      <!-- Distribution Chart -->
+      <div class="col-lg-7">
+        <div class="admin-card">
+          <div class="admin-card-header">
+            <div class="d-flex align-items-center gap-3">
+              <div class="admin-card-icon" style="background:linear-gradient(135deg,#7c3aed,#a855f7);color:#fff;">
+                <i class="bi bi-bar-chart-line"></i>
+              </div>
+              <div>
+                <h2 class="admin-card-title">Distribución del sistema</h2>
+                <span class="admin-card-subtitle">Totales por categoría</span>
+              </div>
+            </div>
+            <div class="admin-card-badge">
+              <span class="admin-card-badge-value">{{ statConfig.reduce((s, c) => s + (counts[c.key] || 0), 0) }}</span>
+              <span class="admin-card-badge-label">total registros</span>
+            </div>
+          </div>
+          <div class="admin-card-body">
+            @if (statConfig.some(s => counts[s.key] != null)) {
+              <!-- Stacked bar overview -->
+              <div class="admin-stacked-section mb-3">
+                <div class="admin-stacked-label">Composición general</div>
+                <div class="admin-stacked-bar">
+                  @for (s of statConfig; track s.key; let i = $index) {
+                    @if (counts[s.key] != null && counts[s.key] > 0) {
+                      <div class="admin-stacked-seg"
+                        [style.width.%]="(counts[s.key] / statConfig.reduce((a, c) => a + (counts[c.key] || 0), 0)) * 100"
+                        [style.background]="s.accent"
+                        [style.--seg-delay]="i * 0.1 + 's'"
+                        [attr.title]="s.label + ': ' + counts[s.key]">
+                      </div>
+                    }
+                  }
+                </div>
+                <div class="admin-stacked-legend">
+                  @for (s of statConfig; track s.key) {
+                    @if (counts[s.key] != null && counts[s.key] > 0) {
+                      <span class="admin-stacked-legend-item">
+                        <span class="admin-stacked-legend-dot" [style.background]="s.accent"></span>
+                        {{ s.label }}
+                      </span>
+                    }
+                  }
+                </div>
+              </div>
+
+              <div class="admin-distrib-divider"></div>
+
+              <!-- Individual bars with percentages -->
+              @for (s of statConfig; track s.key; let i = $index) {
+                <div class="admin-bar-row" [style.--bar-delay]="i * 0.07 + 's'">
+                  <div class="admin-bar-label">
+                    <div class="admin-bar-label-text">
+                      <div class="admin-bar-dot" [style.background]="s.accent"></div>
+                      <span>{{ s.label }}</span>
+                    </div>
+                    <div class="admin-bar-label-right">
+                      <span class="admin-bar-count">{{ counts[s.key] ?? '—' }}</span>
+                      @if (counts[s.key] != null) {
+                        <span class="admin-bar-pct">{{ (counts[s.key] / maxCount() * 100).toFixed(0) }}%</span>
+                      }
+                    </div>
+                  </div>
+                  <div class="admin-bar-track">
+                    <div class="admin-bar-fill"
+                      [style.width.%]="counts[s.key] != null ? (counts[s.key] / maxCount()) * 100 : 0"
+                      [style.background]="s.accent">
+                    </div>
+                    @if (counts[s.key] != null) {
+                      <div class="admin-bar-glow" [style.background]="s.accent"
+                        [style.left.%]="(counts[s.key] / maxCount()) * 100">
+                      </div>
+                    }
+                  </div>
+                </div>
+              }
+            } @else {
+              <p class="text-ink-soft small mb-0 text-center py-3">No hay datos disponibles.</p>
+            }
+          </div>
+        </div>
+      </div>
+
+      <!-- Quick Actions -->
+      <div class="col-lg-5">
+        <div class="admin-card">
+          <div class="admin-card-header">
+            <div class="d-flex align-items-center gap-3">
+              <div class="admin-card-icon" style="background:linear-gradient(135deg,#f59e0b,#d97706);color:#fff;">
+                <i class="bi bi-lightning-charge"></i>
+              </div>
+              <div>
+                <h2 class="admin-card-title">Accesos rápidos</h2>
+                <span class="admin-card-subtitle">Atajos a secciones clave</span>
+              </div>
+            </div>
+          </div>
+          <div class="admin-card-body">
+            <div class="d-flex flex-column gap-2">
+              @for (action of quickActions; track action.route) {
+                <a [routerLink]="action.route" class="admin-action-link">
+                  <div class="admin-action-card">
+                    <div class="admin-action-bg" [style.background]="action.gradient"></div>
+                    <div class="admin-action-content">
+                      <div class="admin-action-icon">
+                        <i class="bi {{ action.icon }}"></i>
+                      </div>
+                      <div class="admin-action-info">
+                        <div class="admin-action-title">{{ action.title }}</div>
+                        <div class="admin-action-desc">{{ action.desc }}</div>
+                      </div>
+                    </div>
+                    <div class="admin-action-arrow">
+                      <i class="bi bi-arrow-up-right"></i>
+                    </div>
+                  </div>
+                </a>
+              }
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  }
+</div>

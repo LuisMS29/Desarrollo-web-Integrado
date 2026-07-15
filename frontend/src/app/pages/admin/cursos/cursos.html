@@ -1,0 +1,385 @@
+<div class="cursos-page">
+  <!-- ═══ HEADER ═══ -->
+  <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+    <div>
+      <h1 class="font-display fw-bold h3 mb-1 d-flex align-items-center gap-2">
+        <span class="header-icon">
+          <i class="bi bi-journal-richtext"></i>
+        </span>
+        Cursos
+      </h1>
+      <p class="text-ink-soft mb-0">Asocia asignaturas con grados, secciones, períodos y docentes.</p>
+    </div>
+    <button class="btn btn-accent px-4" (click)="openCreate()">
+      <i class="bi bi-plus-lg me-2"></i>Nuevo curso
+    </button>
+  </div>
+
+  <!-- ═══ STATS ROW ═══ -->
+  @if (!loading && !error) {
+  <div class="cursos-stats-row row g-3 mb-4">
+    <div class="col-6 col-lg-3">
+      <div class="cursos-stat-card">
+        <div class="cursos-stat-icon" style="background:linear-gradient(135deg,#f59e0b,#d97706);">
+          <i class="bi bi-journal-bookmark-fill"></i>
+        </div>
+        <div class="cursos-stat-body">
+          <div class="cursos-stat-value">{{ totalCursos }}</div>
+          <div class="cursos-stat-label">Total cursos</div>
+        </div>
+      </div>
+    </div>
+    <div class="col-6 col-lg-3">
+      <div class="cursos-stat-card">
+        <div class="cursos-stat-icon" style="background:linear-gradient(135deg,#3b82f6,#2563eb);">
+          <i class="bi bi-ladder"></i>
+        </div>
+        <div class="cursos-stat-body">
+          <div class="cursos-stat-value">{{ gradosUnicos }}</div>
+          <div class="cursos-stat-label">Grados distintos</div>
+        </div>
+      </div>
+    </div>
+    <div class="col-6 col-lg-3">
+      <div class="cursos-stat-card">
+        <div class="cursos-stat-icon" style="background:linear-gradient(135deg,#10b981,#059669);">
+          <i class="bi bi-person-workspace"></i>
+        </div>
+        <div class="cursos-stat-body">
+          <div class="cursos-stat-value">{{ docentesUnicos }}</div>
+          <div class="cursos-stat-label">Docentes asignados</div>
+        </div>
+      </div>
+    </div>
+    <div class="col-6 col-lg-3">
+      <div class="cursos-stat-card">
+        <div class="cursos-stat-icon" style="background:linear-gradient(135deg,#8b5cf6,#7c3aed);">
+          <i class="bi bi-calendar-check"></i>
+        </div>
+        <div class="cursos-stat-body">
+          <div class="cursos-stat-value">{{ periodosUnicos }}</div>
+          <div class="cursos-stat-label">Períodos activos</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  }
+
+  <!-- ═══ FILTERS ═══ -->
+  <div class="cursos-filters-bar mb-4">
+    <div class="row g-2 align-items-center">
+      <div class="col-md-5">
+        <div class="search-wrapper">
+          <i class="bi bi-search search-icon"></i>
+          <input type="text" class="form-control search-input" placeholder="Buscar por asignatura, grado o docente..."
+            [(ngModel)]="search" (input)="applyFilter()" />
+          @if (search) {
+          <button class="search-clear" (click)="search = ''; applyFilter()" title="Limpiar">
+            <i class="bi bi-x-lg"></i>
+          </button>
+          }
+        </div>
+      </div>
+      <div class="col">
+        <div class="d-flex flex-wrap gap-2 align-items-center">
+          <span class="cursos-filter-label">Grado:</span>
+          <div class="filter-pills">
+            <span class="filter-pill" [class.active]="gradoFilter === 'TODOS'" (click)="gradoFilter = 'TODOS'; applyFilter()">
+              <i class="bi bi-grid-3x3-gap-fill"></i> Todos
+            </span>
+            @for (g of gradosDisponibles; track g) {
+            <span class="filter-pill" [class.active]="gradoFilter === g" (click)="gradoFilter = g; applyFilter()">
+              {{ g }}
+            </span>
+            }
+          </div>
+        </div>
+      </div>
+    </div>
+    @if (search || gradoFilter !== 'TODOS' || periodoFilter !== 'TODOS') {
+    <div class="d-flex align-items-center gap-2 mt-2 pt-2 border-top" style="border-color:var(--ie-line-light) !important;">
+      <span class="small text-ink-soft">Filtrado por:</span>
+      @if (gradoFilter !== 'TODOS') {
+      <span class="cursos-active-tag">
+        <i class="bi bi-ladder me-1"></i>{{ gradoFilter }}
+        <button class="btn-close-sm" (click)="gradoFilter = 'TODOS'; applyFilter()"></button>
+      </span>
+      }
+      @if (search) {
+      <span class="cursos-active-tag">
+        <i class="bi bi-search me-1"></i>"{{ search }}"
+        <button class="btn-close-sm" (click)="search = ''; applyFilter()"></button>
+      </span>
+      }
+      <button class="btn btn-sm btn-soft ms-auto px-2 py-0" style="font-size:0.75rem;"
+        (click)="search = ''; gradoFilter = 'TODOS'; periodoFilter = 'TODOS'; applyFilter()">
+        <i class="bi bi-arrow-counterclockwise me-1"></i>Limpiar todo
+      </button>
+    </div>
+    }
+  </div>
+
+  <!-- ═══ LOADING ═══ -->
+  @if (loading) {
+  <div class="entity-loading">
+    <div class="entity-skeleton-header">
+      <div class="entity-skeleton-line" style="width:30%;height:14px;"></div>
+      <div class="entity-skeleton-line" style="width:50%;height:12px;margin-top:6px;"></div>
+    </div>
+    @for (item of [1,2,3,4,5]; track item) {
+    <div class="entity-skeleton-row">
+      <div class="entity-skeleton-line" style="width:24px;height:12px;flex-shrink:0;"></div>
+      <div class="entity-skeleton-line" style="flex:1;"></div>
+      <div class="entity-skeleton-line" style="width:120px;"></div>
+      <div class="entity-skeleton-line" style="width:180px;"></div>
+      <div class="entity-skeleton-line" style="width:100px;"></div>
+      <div class="entity-skeleton-line" style="width:70px;"></div>
+    </div>
+    }
+  </div>
+  }
+
+  <!-- ═══ ERROR ═══ -->
+  @else if (error) {
+  <app-error-state [message]="error" (retry)="load()"></app-error-state>
+  }
+
+  <!-- ═══ TABLE ═══ -->
+  @else {
+  <div class="entity-table-card">
+    <div class="entity-table-header">
+      <div class="d-flex align-items-center gap-2">
+        <i class="bi bi-journal-richtext" style="color:var(--ie-ink-muted);"></i>
+        <span class="fw-semibold small text-ink-soft">Cursos registrados</span>
+      </div>
+      <div class="d-flex align-items-center gap-2">
+        <span class="fw-semibold small text-ink-soft">{{ filtered.length }} curso{{ filtered.length !== 1 ? 's' : '' }}</span>
+        @if (filtered.length !== cursos.length) {
+        <span class="text-ink-muted small">(de {{ cursos.length }})</span>
+        }
+      </div>
+    </div>
+
+    <div class="table-responsive">
+      <table class="entity-table">
+        <thead>
+          <tr>
+            <th style="width:48px;text-align:center;">#</th>
+            <th>Asignatura</th>
+            <th>Grado / Sección</th>
+            <th>Docente</th>
+            <th>Período</th>
+            <th style="width:96px;text-align:right;">Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          @if (filtered.length === 0) {
+          <tr>
+            <td colspan="6">
+              <div class="entity-empty">
+                <div class="entity-empty-icon">
+                  <i class="bi bi-search"></i>
+                </div>
+                <h4 class="font-display fw-bold h6 mb-1">
+                  {{ search || gradoFilter !== 'TODOS' ? 'Sin resultados' : 'Aún no hay cursos' }}
+                </h4>
+                <p class="small text-ink-soft mb-0">
+                  @if (search) { No se encontraron cursos que coincidan con tu búsqueda. }
+                  @else { Crea el primer curso usando el botón superior. }
+                </p>
+              </div>
+            </td>
+          </tr>
+          }
+          @for (curso of filtered; track curso.idCurso; let i = $index) {
+          <tr class="entity-row" [class.entity-row-alt]="i % 2 === 1">
+            <td style="text-align:center;">
+              <span class="text-ink-muted" style="font-size:0.8rem;font-weight:500;">{{ i + 1 }}</span>
+            </td>
+            <td>
+              <div class="d-flex align-items-center gap-2">
+                <span class="cursos-table-subject-icon"
+                  [ngStyle]="getSubjectIconStyle(curso.grado?.nombre)">
+                  <i class="bi bi-book"></i>
+                </span>
+                <div>
+                  <div class="fw-semibold" style="color:var(--ie-ink);font-size:0.9rem;">
+                    {{ curso.asignatura?.nombre || '—' }}
+                  </div>
+                  @if (curso.asignatura?.codigo) {
+                  <div class="text-ink-muted" style="font-size:0.72rem;">
+                    {{ curso.asignatura?.codigo }}
+                  </div>
+                  }
+                </div>
+              </div>
+            </td>
+            <td>
+              <div class="d-flex align-items-center gap-1 flex-wrap">
+                <span class="fw-medium">{{ curso.grado?.nombre || '—' }}</span>
+                <span class="text-ink-muted" style="font-size:0.75rem;">/</span>
+                <span>{{ curso.seccion?.nombre || '—' }}</span>
+              </div>
+            </td>
+            <td>
+              @if (curso.docente) {
+              <div class="d-flex align-items-center gap-2">
+                <span class="cursos-table-avatar">
+                  {{ ((curso.docente.nombres || '')[0] + (curso.docente.apellidos || '')[0]).toUpperCase() }}
+                </span>
+                <span>
+                  {{ (curso.docente.nombres + ' ' + curso.docente.apellidos).trim() || curso.docente.codigoDocente }}
+                </span>
+              </div>
+              } @else {
+              <span class="text-ink-muted fst-italic">Sin asignar</span>
+              }
+            </td>
+            <td>
+              <span class="cursos-table-periodo">
+                <i class="bi bi-calendar3 me-1"></i>
+                {{ curso.periodoAcademico?.nombre || '—' }}
+              </span>
+            </td>
+            <td style="text-align:right;">
+              <div class="entity-actions">
+                <button class="entity-action-btn info" (click)="openEdit(curso)" title="Editar curso">
+                  <i class="bi bi-pencil"></i>
+                </button>
+                <button class="entity-action-btn danger" (click)="confirmDelete(curso)" title="Eliminar curso">
+                  <i class="bi bi-trash3"></i>
+                </button>
+              </div>
+            </td>
+          </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </div>
+  }
+
+  <!-- ═══ FORM MODAL ═══ -->
+  @if (showForm) {
+  <div class="modal d-block" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+      <div class="modal-content">
+        <form (ngSubmit)="handleSubmit()">
+          <div class="modal-header">
+            <div class="d-flex align-items-center gap-3">
+              <div class="modal-header-icon"
+                [style.background]="editingRow ? 'var(--ie-info-soft)' : 'var(--ie-accent-soft)'"
+                [style.color]="editingRow ? 'var(--ie-info)' : 'var(--ie-accent-dark)'">
+                <i class="bi" [class.bi-pencil-fill]="editingRow" [class.bi-plus-lg]="!editingRow"></i>
+              </div>
+              <div>
+                <h5 class="modal-title font-display fw-bold mb-0">{{ editingRow ? 'Editar curso' : 'Nuevo curso' }}</h5>
+                <p class="small text-ink-soft mb-0">
+                  {{ editingRow ? 'Modifica los campos del curso.' : 'Asigna una asignatura a un grado, sección, período y docente.' }}
+                </p>
+              </div>
+            </div>
+            <button type="button" class="btn-close" (click)="showForm = false" [disabled]="saving"></button>
+          </div>
+          <div class="modal-body">
+            @if (formError) {
+            <div class="entity-form-alert">
+              <i class="bi bi-exclamation-circle me-2"></i>{{ formError }}
+            </div>
+            }
+
+            @if (!relationsLoading) {
+            <div class="row g-4">
+              <div class="col-md-6">
+                <label class="cursos-field-label">
+                  <i class="bi bi-book me-1"></i>Asignatura <span class="text-danger">*</span>
+                </label>
+                <select class="cursos-field" [(ngModel)]="form.asignatura" name="asignatura" [disabled]="saving">
+                  <option value="" disabled>Selecciona una asignatura</option>
+                  @for (opt of relationOptions['asignatura'] || []; track opt.idAsignatura) {
+                  <option [value]="opt.idAsignatura">{{ opt.nombre }}</option>
+                  }
+                </select>
+              </div>
+              <div class="col-md-6">
+                <label class="cursos-field-label">
+                  <i class="bi bi-ladder me-1"></i>Grado <span class="text-danger">*</span>
+                </label>
+                <select class="cursos-field" [(ngModel)]="form.grado" name="grado" [disabled]="saving">
+                  <option value="" disabled>Selecciona un grado</option>
+                  @for (opt of relationOptions['grado'] || []; track opt.idGrado) {
+                  <option [value]="opt.idGrado">{{ opt.nombre }}</option>
+                  }
+                </select>
+              </div>
+              <div class="col-md-6">
+                <label class="cursos-field-label">
+                  <i class="bi bi-columns-gap me-1"></i>Sección <span class="text-danger">*</span>
+                </label>
+                <select class="cursos-field" [(ngModel)]="form.seccion" name="seccion" [disabled]="saving">
+                  <option value="" disabled>Selecciona una sección</option>
+                  @for (opt of relationOptions['seccion'] || []; track opt.idSeccion) {
+                  <option [value]="opt.idSeccion">{{ opt.nombre }}</option>
+                  }
+                </select>
+              </div>
+              <div class="col-md-6">
+                <label class="cursos-field-label">
+                  <i class="bi bi-person-workspace me-1"></i>Docente <span class="text-danger">*</span>
+                </label>
+                <select class="cursos-field" [(ngModel)]="form.docente" name="docente" [disabled]="saving">
+                  <option value="" disabled>Selecciona un docente</option>
+                  @for (opt of relationOptions['docente'] || []; track opt.idDocente) {
+                  <option [value]="opt.idDocente">{{ opt.nombres }} {{ opt.apellidos }}</option>
+                  }
+                </select>
+              </div>
+              <div class="col-md-6">
+                <label class="cursos-field-label">
+                  <i class="bi bi-calendar-event me-1"></i>Período académico <span class="text-danger">*</span>
+                </label>
+                <select class="cursos-field" [(ngModel)]="form.periodoAcademico" name="periodoAcademico" [disabled]="saving">
+                  <option value="" disabled>Selecciona un período</option>
+                  @for (opt of relationOptions['periodoAcademico'] || []; track opt.idPeriodo) {
+                  <option [value]="opt.idPeriodo">{{ opt.nombre }} ({{ opt.anio }})</option>
+                  }
+                </select>
+              </div>
+            </div>
+            } @else {
+            <div class="text-center py-4">
+              <div class="loading-spinner mx-auto mb-2"></div>
+              <p class="small text-ink-soft mb-0">Cargando opciones...</p>
+            </div>
+            }
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-soft px-4" (click)="showForm = false" [disabled]="saving">Cancelar</button>
+            <button type="submit" class="btn btn-accent px-4" [disabled]="saving || relationsLoading">
+              @if (saving) {
+              <span class="spinner-border spinner-border-sm me-2"></span> Guardando...
+              } @else {
+              <i class="bi bi-check-lg me-2"></i>{{ editingRow ? 'Guardar cambios' : 'Crear curso' }}
+              }
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+  <div class="modal-backdrop show"></div>
+  }
+
+  <!-- ═══ DELETE CONFIRM ═══ -->
+  <app-confirm-modal [show]="!!deleteTarget" title="Eliminar curso"
+    message="Esta acción no se puede deshacer. ¿Deseas eliminar este curso?"
+    confirmLabel="Eliminar" confirmVariant="danger" [loading]="deleteLoading"
+    (confirm)="handleDelete()" (cancel)="deleteTarget = null"></app-confirm-modal>
+
+  <!-- ═══ ALERT ═══ -->
+  @if (alertMessage) {
+  <app-confirm-modal [show]="true" [title]="alertTitle" [message]="alertMessage"
+    confirmLabel="Entendido" confirmVariant="primary"
+    (confirm)="alertMessage = ''; alertTitle = ''" (cancel)="alertMessage = ''; alertTitle = ''"></app-confirm-modal>
+  }
+</div>

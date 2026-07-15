@@ -1,7 +1,164 @@
-<div>
-  <div class="mb-4">
-    <h1 class="font-display fw-bold h3 mb-1">Comunicados</h1>
-    <p class="text-secondary mb-0">Avisos institucionales dirigidos a todos o a estudiantes.</p>
+<div class="ee-dashboard">
+
+  <!-- ══════════════════════════════════════════════════════════
+       HERO — Comunicados
+       ══════════════════════════════════════════════════════════ -->
+  <div class="ee-hero mb-4">
+    <div class="ee-hero-bg">
+      <div class="ee-hero-orbe ee-hero-orbe-1"></div>
+      <div class="ee-hero-orbe ee-hero-orbe-2"></div>
+      <div class="ee-hero-orbe ee-hero-orbe-3"></div>
+    </div>
+    <div class="ee-hero-content">
+      <div class="ee-hero-main">
+        <div class="ee-hero-avatar-wrap">
+          <div class="ee-hero-avatar" style="background:linear-gradient(135deg,#f59e0b,#fbbf24);">
+            <i class="bi bi-megaphone-fill"></i>
+          </div>
+          <div class="ee-hero-avatar-ring"></div>
+        </div>
+        <div class="ee-hero-info">
+          <h1 class="ee-hero-title mb-0">Comunicados</h1>
+          <p class="ee-hero-sub mb-0">
+            <i class="bi bi-mortarboard me-1"></i>Avisos institucionales dirigidos a todos o a estudiantes
+          </p>
+        </div>
+      </div>
+      @if (!loading) {
+        <div class="ee-hero-stats">
+          <div class="ee-hero-stat">
+            <span class="ee-hero-stat-val">{{ totalComunicados }}</span>
+            <span class="ee-hero-stat-lbl">comunicados</span>
+          </div>
+          <div class="ee-hero-stat-divider"></div>
+          <div class="ee-hero-stat">
+            <span class="ee-hero-stat-val">{{ noLeidos }}</span>
+            <span class="ee-hero-stat-lbl">sin leer</span>
+          </div>
+        </div>
+      }
+    </div>
   </div>
-  <app-comunicados-feed [rolActual]="'ESTUDIANTE'"></app-comunicados-feed>
+
+  @if (loading) {
+    <div class="ee-loading">
+      <div class="ee-loading-spinner"></div>
+      <span>Cargando comunicados...</span>
+    </div>
+  } @else if (totalComunicados === 0) {
+    <div class="dd-com-feed-empty" style="background:var(--ie-card-bg);border:1px solid var(--ie-line);border-radius:var(--ie-radius-xl);padding:3rem 1.5rem;margin-bottom:1.5rem;">
+      <div class="dd-com-feed-empty-icon">
+        <i class="bi bi-megaphone"></i>
+      </div>
+      <h4 class="dd-com-feed-empty-title">Sin comunicados</h4>
+      <p class="dd-com-feed-empty-text">No hay comunicados vigentes por el momento.</p>
+    </div>
+  } @else {
+    <!-- ═══ Stats Cards ═══ -->
+    <div class="admin-metrics-grid mb-4">
+      <div class="admin-metric-link" style="--metric-delay:0s">
+        <div class="admin-metric-card">
+          <div class="admin-metric-top" style="background:rgba(245,158,11,0.1);">
+            <div class="admin-metric-icon" style="background:rgba(245,158,11,0.2);color:#f59e0b;">
+              <i class="bi bi-megaphone-fill"></i>
+            </div>
+            <div class="admin-metric-pulse" style="background:rgba(245,158,11,0.2);"></div>
+          </div>
+          <div class="admin-metric-body">
+            <div class="admin-metric-label">Total</div>
+            <div class="admin-metric-value" style="color:#f59e0b;">{{ totalComunicados }}</div>
+          </div>
+        </div>
+      </div>
+      <div class="admin-metric-link" style="--metric-delay:0.06s">
+        <div class="admin-metric-card">
+          <div class="admin-metric-top" style="background:rgba(239,68,68,0.1);">
+            <div class="admin-metric-icon" style="background:rgba(239,68,68,0.2);color:#ef4444;">
+              <i class="bi bi-envelope-open-fill"></i>
+            </div>
+            <div class="admin-metric-pulse" style="background:rgba(239,68,68,0.2);"></div>
+          </div>
+          <div class="admin-metric-body">
+            <div class="admin-metric-label">Sin leer</div>
+            <div class="admin-metric-value" style="color:#ef4444;">{{ noLeidos }}</div>
+          </div>
+        </div>
+      </div>
+      <div class="admin-metric-link" style="--metric-delay:0.12s">
+        <div class="admin-metric-card">
+          <div class="admin-metric-top" style="background:rgba(16,185,129,0.1);">
+            <div class="admin-metric-icon" style="background:rgba(16,185,129,0.2);color:#10b981;">
+              <i class="bi bi-check2-all"></i>
+            </div>
+            <div class="admin-metric-pulse" style="background:rgba(16,185,129,0.2);"></div>
+          </div>
+          <div class="admin-metric-body">
+            <div class="admin-metric-label">Leídos</div>
+            <div class="admin-metric-value" style="color:#10b981;">{{ leidosCount }}</div>
+          </div>
+        </div>
+      </div>
+      <div class="admin-metric-link" style="--metric-delay:0.18s">
+        <div class="admin-metric-card">
+          <div class="admin-metric-top" style="background:rgba(124,58,237,0.1);">
+            <div class="admin-metric-icon" style="background:rgba(124,58,237,0.2);color:#7c3aed;">
+              <i class="bi bi-globe2"></i>
+            </div>
+            <div class="admin-metric-pulse" style="background:rgba(124,58,237,0.2);"></div>
+          </div>
+          <div class="admin-metric-body">
+            <div class="admin-metric-label">Dirigidos a ti</div>
+            <div class="admin-metric-value" style="color:#7c3aed;">{{ paraTi }}</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ FILTRO DE BÚSQUEDA ═══ -->
+    <div class="users-filters-card mb-3">
+      <div class="row g-2 align-items-center">
+        <div class="col-md-6">
+          <div class="search-wrapper">
+            <i class="bi bi-search search-icon"></i>
+            <input type="text" class="form-control search-input" placeholder="Buscar por título o contenido..."
+              [(ngModel)]="search" (input)="applyFilter()" />
+            @if (search) {
+              <button class="search-clear" (click)="search = ''; applyFilter()" title="Limpiar">
+                <i class="bi bi-x-lg"></i>
+              </button>
+            }
+          </div>
+        </div>
+      </div>
+      @if (search) {
+        <div class="d-flex align-items-center gap-2 mt-2 pt-2 border-top"
+          style="border-color:var(--ie-line-light) !important;">
+          <span class="small text-ink-soft">Filtrado por:</span>
+          <span class="users-active-filter">
+            <i class="bi bi-search me-1"></i>"{{ search }}"
+            <button class="btn-close-sm" (click)="search = ''; applyFilter()" title="Quitar filtro"></button>
+          </span>
+          <button class="btn btn-sm btn-soft ms-auto px-2 py-0" style="font-size:0.75rem;"
+            (click)="search = ''; applyFilter()">
+            <i class="bi bi-arrow-counterclockwise me-1"></i>Limpiar todo
+          </button>
+        </div>
+      }
+    </div>
+
+    <!-- ═══ Comunicados Content Section ═══ -->
+    <div class="ee-com-section">
+      <div class="ee-section-header mb-3">
+        <div class="d-flex align-items-center gap-2">
+          <div class="ee-section-icon" style="background:linear-gradient(135deg,#f59e0b,#fbbf24);">
+            <i class="bi bi-megaphone-fill"></i>
+          </div>
+          <h2 class="ee-section-title mb-0">Todos los comunicados</h2>
+          <span class="ee-section-badge">{{ totalComunicados }}</span>
+        </div>
+      </div>
+
+      <app-comunicados-feed [rolActual]="'ESTUDIANTE'" [cursosIds]="cursosIds"></app-comunicados-feed>
+    </div>
+  }
 </div>

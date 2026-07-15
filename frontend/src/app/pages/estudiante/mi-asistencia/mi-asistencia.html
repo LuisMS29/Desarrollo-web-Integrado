@@ -1,80 +1,234 @@
-<div>
-  <div class="mb-4">
-    <h1 class="font-display fw-bold h3 mb-1">Mi asistencia</h1>
-    <p class="text-secondary mb-0">Registro de asistencia por curso.</p>
+<div class="ee-dashboard">
+
+  <!-- ═══ Hero ═══ -->
+  <div class="ee-hero mb-4">
+    <div class="ee-hero-bg">
+      <div class="ee-hero-orbe ee-hero-orbe-1"></div>
+      <div class="ee-hero-orbe ee-hero-orbe-2"></div>
+      <div class="ee-hero-orbe ee-hero-orbe-3"></div>
+    </div>
+    <div class="ee-hero-content">
+      <div class="ee-hero-main">
+        <div class="ee-hero-avatar-wrap">
+          <div class="ee-hero-avatar" style="background:linear-gradient(135deg,#7c3aed,#a855f7);">
+            <i class="bi bi-calendar-check-fill"></i>
+          </div>
+          <div class="ee-hero-avatar-ring"></div>
+        </div>
+        <div class="ee-hero-info">
+          <h1 class="ee-hero-title mb-0">Mi asistencia</h1>
+          <p class="ee-hero-sub mb-0">
+            <i class="bi bi-mortarboard me-1"></i>Registro de asistencia por curso
+          </p>
+        </div>
+      </div>
+      @if (!loading) {
+        <div class="ee-hero-stats">
+          <div class="ee-hero-stat">
+            <span class="ee-hero-stat-val" [style.color]="estadoColor">{{ porcentaje }}%</span>
+            <span class="ee-hero-stat-lbl">{{ estadoGeneral }}</span>
+          </div>
+          <div class="ee-hero-stat-divider"></div>
+          <div class="ee-hero-stat">
+            <span class="ee-hero-stat-val">{{ totalAsistencias }}</span>
+            <span class="ee-hero-stat-lbl">registros</span>
+          </div>
+        </div>
+      }
+    </div>
   </div>
 
   @if (loading) {
-    <app-loading-state label="Cargando asistencia..."></app-loading-state>
+    <div class="ee-loading">
+      <div class="ee-loading-spinner"></div>
+      <span>Cargando tu asistencia...</span>
+    </div>
   } @else if (asistencias.length === 0) {
-    <div class="ie-card p-4 text-center py-5"><p class="text-secondary mb-0">Aún no hay registros de asistencia.</p></div>
+    <div class="dd-com-feed-empty">
+      <div class="dd-com-feed-empty-icon">
+        <i class="bi bi-calendar-x"></i>
+      </div>
+      <h4 class="dd-com-feed-empty-title">Sin registros</h4>
+      <p class="dd-com-feed-empty-text">Aún no hay registros de asistencia disponibles.</p>
+    </div>
   } @else {
-    <div class="row g-3 mb-4">
-      <div class="col-6 col-lg-3">
-        <div class="ie-stat-card h-100">
-          <div class="accent-bar" style="background:var(--ie-success);"></div>
-          <div class="label">Asistencia</div>
-          <div class="value">{{ porcentaje }}%</div>
+    <!-- ═══ Stats Cards ═══ -->
+    <div class="admin-metrics-grid mb-4">
+      <div class="admin-metric-link" style="--metric-delay:0s">
+        <div class="admin-metric-card">
+          <div class="admin-metric-top" style="background:rgba(5,150,105,0.1);">
+            <div class="admin-metric-icon" style="background:rgba(5,150,105,0.2);color:#059669;">
+              <i class="bi bi-check-circle-fill"></i>
+            </div>
+            <div class="admin-metric-pulse" style="background:rgba(5,150,105,0.2);"></div>
+          </div>
+          <div class="admin-metric-body">
+            <div class="admin-metric-label">Presentes</div>
+            <div class="admin-metric-value" style="color:#059669;">{{ presentes }}</div>
+          </div>
         </div>
       </div>
-      <div class="col-6 col-lg-3">
-        <div class="ie-stat-card h-100">
-          <div class="accent-bar" style="background:var(--ie-primary);"></div>
-          <div class="label">Presentes</div>
-          <div class="value">{{ presentes }}</div>
+      <div class="admin-metric-link" style="--metric-delay:0.06s">
+        <div class="admin-metric-card">
+          <div class="admin-metric-top" style="background:rgba(245,158,11,0.1);">
+            <div class="admin-metric-icon" style="background:rgba(245,158,11,0.2);color:#f59e0b;">
+              <i class="bi bi-exclamation-circle-fill"></i>
+            </div>
+            <div class="admin-metric-pulse" style="background:rgba(245,158,11,0.2);"></div>
+          </div>
+          <div class="admin-metric-body">
+            <div class="admin-metric-label">Tardanzas</div>
+            <div class="admin-metric-value" style="color:#f59e0b;">{{ tardanzas }}</div>
+          </div>
         </div>
       </div>
-      <div class="col-6 col-lg-3">
-        <div class="ie-stat-card h-100">
-          <div class="accent-bar" style="background:#ffc107;"></div>
-          <div class="label">Tardanzas</div>
-          <div class="value">{{ tardanzas }}</div>
+      <div class="admin-metric-link" style="--metric-delay:0.12s">
+        <div class="admin-metric-card">
+          <div class="admin-metric-top" style="background:rgba(2,132,199,0.1);">
+            <div class="admin-metric-icon" style="background:rgba(2,132,199,0.2);color:#0284c7;">
+              <i class="bi bi-question-circle-fill"></i>
+            </div>
+            <div class="admin-metric-pulse" style="background:rgba(2,132,199,0.2);"></div>
+          </div>
+          <div class="admin-metric-body">
+            <div class="admin-metric-label">Justificados</div>
+            <div class="admin-metric-value" style="color:#0284c7;">{{ justificados }}</div>
+          </div>
         </div>
       </div>
-      <div class="col-6 col-lg-3">
-        <div class="ie-stat-card h-100">
-          <div class="accent-bar" style="background:var(--ie-danger);"></div>
-          <div class="label">Ausentes</div>
-          <div class="value">{{ ausentes }}</div>
+      <div class="admin-metric-link" style="--metric-delay:0.18s">
+        <div class="admin-metric-card">
+          <div class="admin-metric-top" style="background:rgba(239,68,68,0.1);">
+            <div class="admin-metric-icon" style="background:rgba(239,68,68,0.2);color:#ef4444;">
+              <i class="bi bi-x-circle-fill"></i>
+            </div>
+            <div class="admin-metric-pulse" style="background:rgba(239,68,68,0.2);"></div>
+          </div>
+          <div class="admin-metric-body">
+            <div class="admin-metric-label">Ausentes</div>
+            <div class="admin-metric-value" style="color:#ef4444;">{{ ausentes }}</div>
+          </div>
         </div>
       </div>
     </div>
 
-    @for (g of agrupadasPorCurso; track g.curso?.idCurso) {
-      <div class="ie-card p-4 mb-3">
-        <h2 class="font-display h5 fw-bold mb-3">{{ g.curso?.asignatura?.nombre || '—' }} · {{ g.curso?.grado?.nombre }}{{ g.curso?.seccion?.nombre }}</h2>
-        <div class="table-responsive" style="max-height:260px;overflow-y:auto;">
-          <table class="table ie-table mb-0">
-            <thead>
-              <tr>
-                <th>Fecha</th>
-                <th class="text-center">Estado</th>
-              </tr>
-            </thead>
-            <tbody>
-              @for (a of g.asistencias; track a.idAsistencia) {
-                <tr>
-                  <td>{{ a.fecha | date:'dd/MM/yyyy' }}</td>
-                  <td class="text-center">
-                    @if (a.estado === 'PRESENTE') {
-                      <span class="badge bg-success">Presente</span>
-                    } @else if (a.estado === 'TARDANZA') {
-                      <span class="badge bg-warning text-dark">Tardanza</span>
-                    } @else if (a.estado === 'JUSTIFICADO') {
-                      <span class="badge bg-info text-dark">Justificado</span>
-                    } @else {
-                      <span class="badge bg-danger">Ausente</span>
-                    }
-                  </td>
-                </tr>
-              }
-            </tbody>
-          </table>
-        </div>
-        <div class="mt-2 small text-end text-secondary">
-          {{ presentesCount(g.asistencias) }}/{{ g.asistencias.length }} presente(s)
+    <!-- ═══ FILTRO DE BÚSQUEDA ═══ -->
+    <div class="users-filters-card mb-3">
+      <div class="row g-2 align-items-center">
+        <div class="col-md-6">
+          <div class="search-wrapper">
+            <i class="bi bi-search search-icon"></i>
+            <input type="text" class="form-control search-input" placeholder="Buscar por nombre del curso..."
+              [(ngModel)]="search" (input)="applyFilter()" />
+            @if (search) {
+              <button class="search-clear" (click)="search = ''; applyFilter()" title="Limpiar">
+                <i class="bi bi-x-lg"></i>
+              </button>
+            }
+          </div>
         </div>
       </div>
+      @if (search) {
+        <div class="d-flex align-items-center gap-2 mt-2 pt-2 border-top"
+          style="border-color:var(--ie-line-light) !important;">
+          <span class="small text-ink-soft">Filtrado por:</span>
+          <span class="users-active-filter">
+            <i class="bi bi-search me-1"></i>"{{ search }}"
+            <button class="btn-close-sm" (click)="search = ''; applyFilter()" title="Quitar filtro"></button>
+          </span>
+          <button class="btn btn-sm btn-soft ms-auto px-2 py-0" style="font-size:0.75rem;"
+            (click)="search = ''; applyFilter()">
+            <i class="bi bi-arrow-counterclockwise me-1"></i>Limpiar todo
+          </button>
+        </div>
+      }
+    </div>
+
+    @if (filteredAgrupadas.length === 0) {
+      <div class="users-empty" style="background:var(--ie-card-bg);border:1px solid var(--ie-line);border-radius:var(--ie-radius-xl);padding:3rem 1.5rem;">
+        <div class="users-empty-icon">
+          <i class="bi bi-search"></i>
+        </div>
+        <h4 class="font-display fw-bold h6 mb-1">Sin resultados</h4>
+        <p class="small text-ink-soft mb-0">No hay cursos que coincidan con "{{ search }}".</p>
+      </div>
+    } @else {
+      <div class="d-flex align-items-center gap-2 mb-3">
+        <span class="small text-ink-soft">
+          <i class="bi bi-list-columns me-1"></i>{{ filteredAgrupadas.length }} curso{{ filteredAgrupadas.length !== 1 ? 's' : '' }}
+        </span>
+        @if (filteredAgrupadas.length !== agrupadasPorCurso.length) {
+          <span class="text-ink-muted small">(de {{ agrupadasPorCurso.length }})</span>
+        }
+      </div>
+
+      <!-- ═══ Asistencia por Curso ═══ -->
+      <div class="ee-asistencia-list">
+      @for (g of filteredAgrupadas; track g.curso?.idCurso; let i = $index) {
+        @let cursoInfo = g.cursoInfo || cursos[0];
+        <div class="ee-asistencia-card" [id]="'asistencia-curso-' + (g.cursoInfo?.id || i)" [style.--asist-delay]="i * 0.08 + 's'">
+          <div class="ee-asistencia-card-header" [style.border-left-color]="cursoInfo?.accent || '#7c3aed'">
+            <div class="ee-asistencia-card-top">
+              <div class="ee-asistencia-icon" [style.background]="(cursoInfo?.accent || '#7c3aed') + '18'" [style.color]="cursoInfo?.accent || '#7c3aed'">
+                <i class="bi {{ cursoInfo?.icono || 'bi-calendar-check' }}"></i>
+              </div>
+              <div class="ee-asistencia-info">
+                <h3 class="ee-asistencia-title" [style.color]="cursoInfo?.accent || '#7c3aed'">{{ g.curso?.asignatura?.nombre || '—' }}</h3>
+                <div class="ee-asistencia-meta">
+                  <span class="ee-asistencia-tag" [style.background]="(cursoInfo?.accent || '#7c3aed') + '10'" [style.color]="cursoInfo?.accent || '#7c3aed'">
+                    <i class="bi bi-layers"></i>
+                    {{ g.curso?.grado?.nombre }}{{ g.curso?.seccion?.nombre }}
+                  </span>
+                  <span class="ee-asistencia-tag" style="background:var(--ie-bg-alt);color:var(--ie-ink-soft);">
+                    <i class="bi bi-person"></i>
+                    {{ g.curso?.docente?.nombres?.split(' ')[0] || '—' }}
+                  </span>
+                </div>
+              </div>
+              <div class="ee-asistencia-stats">
+                <span class="ee-asistencia-pct" [style.color]="getEstadoColor('PRESENTE')">
+                  {{ presentesCount(g.asistencias) }}/{{ g.asistencias.length }}
+                </span>
+                <span class="ee-asistencia-lbl">presentes</span>
+              </div>
+            </div>
+          </div>
+          <div class="ee-asistencia-card-body">
+            <div class="ee-asistencia-table">
+              @for (a of g.asistencias; track a.idAsistencia; let j = $index) {
+                <div class="ee-asistencia-row" [style.--row-delay]="j * 0.03 + 's'">
+                  <div class="ee-asistencia-fecha">
+                    <i class="bi bi-calendar3"></i>
+                    <span>{{ a.fecha | date:'dd MMM yyyy' }}</span>
+                  </div>
+                  <span class="ee-asistencia-badge"
+                    [style.background]="getEstadoBg(a.estado)"
+                    [style.color]="getEstadoColor(a.estado)">
+                    <i class="bi {{ getEstadoIcon(a.estado) }}"></i>
+                    {{ getEstadoLabel(a.estado) }}
+                  </span>
+                </div>
+              }
+            </div>
+            <div class="ee-asistencia-footer">
+              <span class="ee-asistencia-footer-label">
+                <i class="bi bi-pie-chart"></i>
+                Asistencia del curso
+              </span>
+              <span class="ee-asistencia-footer-bar">
+                        @let pct = pctCurso(g.asistencias);
+                <div class="ee-asistencia-bar-track">
+                  <div class="ee-asistencia-bar-fill" [style.width.%]="pct"
+                    [style.background]="pct >= 80 ? '#059669' : pct >= 60 ? '#f59e0b' : '#ef4444'">
+                  </div>
+                </div>
+                <span class="ee-asistencia-bar-pct" [style.color]="pct >= 80 ? '#059669' : pct >= 60 ? '#f59e0b' : '#ef4444'">{{ pct }}%</span>
+              </span>
+            </div>
+          </div>
+        </div>
+      }
+    </div>
     }
   }
 </div>

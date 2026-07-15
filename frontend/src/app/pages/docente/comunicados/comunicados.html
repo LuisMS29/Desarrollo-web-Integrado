@@ -1,42 +1,220 @@
-<div>
-  <div class="d-flex justify-content-between align-items-center mb-3">
-    <div>
-      <h1 class="font-display fw-bold h3 mb-1">Comunicados</h1>
-      <p class="text-secondary mb-0">Avisos institucionales.</p>
+<div class="dd-comunicados">
+
+  <!-- ══════════════════════════════════════════════════════════
+       HERO — Encabezado + botón nuevo comunicado
+       ══════════════════════════════════════════════════════════ -->
+  <div class="dd-com-hero mb-4">
+    <div class="dd-com-hero-bg">
+      <div class="dd-com-orbe dd-com-orbe-1"></div>
+      <div class="dd-com-orbe dd-com-orbe-2"></div>
+      <div class="dd-com-orbe dd-com-orbe-3"></div>
     </div>
-    <button class="btn ie-btn-primary" (click)="showForm = !showForm">
-      {{ showForm ? 'Cancelar' : 'Nuevo comunicado' }}
-    </button>
+    <div class="dd-com-hero-content">
+      <div class="d-flex align-items-center gap-3">
+        <div class="dd-com-hero-icon">
+          <i class="bi bi-megaphone-fill"></i>
+        </div>
+        <div class="flex-grow-1">
+          <h1 class="dd-com-hero-title mb-0">Comunicados</h1>
+          <p class="dd-com-hero-sub mb-0">Avisos institucionales</p>
+        </div>
+      </div>
+      <button class="dd-com-new-btn" (click)="toggleForm()">
+        @if (showForm) {
+          <i class="bi bi-x-lg"></i> Cancelar
+        } @else {
+          <i class="bi bi-plus-lg"></i> Nuevo comunicado
+        }
+      </button>
+    </div>
   </div>
 
+  <!-- ══════════════════════════════════════════════════════════
+       FORMULARIO — Nuevo / Editar comunicado
+       ══════════════════════════════════════════════════════════ -->
   @if (showForm) {
-    <div class="ie-card p-4 mb-4">
-      <h2 class="font-display fw-semibold h5 mb-3">Nuevo comunicado</h2>
-      <form (ngSubmit)="handleSubmit()">
-        <div class="mb-3">
-          <label class="form-label small fw-semibold">Título</label>
-          <input class="form-control" [(ngModel)]="form.titulo" name="titulo" required />
-        </div>
-        <div class="mb-3">
-          <label class="form-label small fw-semibold">Contenido</label>
-          <textarea class="form-control" rows="4" [(ngModel)]="form.contenido" name="contenido" required></textarea>
-        </div>
-        <div class="row g-3 mb-3">
-          <div class="col-sm-4">
-            <label class="form-label small fw-semibold">Dirigido a</label>
-            <select class="form-select" [(ngModel)]="form.dirigidoA" name="dirigidoA">
-              @for (o of dirigidoA; track o.value) { <option [value]="o.value">{{ o.label }}</option> }
-            </select>
+    <div class="dd-com-form mb-4">
+      <div class="dd-com-form-header">
+        <div class="d-flex align-items-center gap-3">
+          <div class="dd-com-form-icon" [style.background]="isEditing ? 'var(--ie-info-soft, #dbeafe)' : 'var(--ie-accent-soft, #ede9fe)'" [style.color]="isEditing ? 'var(--ie-info, #2563eb)' : 'var(--ie-accent-dark, #7c3aed)'">
+            <i class="bi" [class.bi-pencil-square]="isEditing" [class.bi-pencil-square]="!isEditing"></i>
           </div>
-          <div class="col-sm-4">
-            <label class="form-label small fw-semibold">Fecha de expiración (opcional)</label>
-            <input type="date" class="form-control" [(ngModel)]="form.fechaExpiracion" name="fechaExpiracion" />
+          <div>
+            <h2 class="dd-com-form-title mb-0">{{ formTitle }}</h2>
+            <span class="dd-com-form-sub">{{ formSubtitle }}</span>
           </div>
         </div>
-        <button class="btn ie-btn-primary" [disabled]="saving">{{ saving ? 'Publicando...' : 'Publicar' }}</button>
-      </form>
+      </div>
+      <div class="dd-com-form-body">
+        <form (ngSubmit)="handleSubmit()">
+          <div class="mb-3">
+            <label class="dd-com-form-label"><i class="bi bi-heading me-1"></i>Título</label>
+            <input class="dd-com-form-input" [(ngModel)]="form.titulo" name="titulo" required placeholder="Título del comunicado" />
+          </div>
+          <div class="mb-3">
+            <label class="dd-com-form-label"><i class="bi bi-text-paragraph me-1"></i>Contenido</label>
+            <textarea class="dd-com-form-textarea" rows="4" [(ngModel)]="form.contenido" name="contenido" required placeholder="Escribe el contenido del comunicado..."></textarea>
+          </div>
+          <div class="row g-3 mb-3">
+            <div class="col-sm-6">
+              <label class="dd-com-form-label"><i class="bi bi-people me-1"></i>Dirigido a</label>
+              <select class="dd-com-form-select" [(ngModel)]="form.dirigidoA" name="dirigidoA" (change)="onDirigidoAChange()">
+                @for (o of dirigidoA; track o.value) {
+                  <option [value]="o.value">{{ o.label }}</option>
+                }
+              </select>
+            </div>
+            <div class="col-sm-6">
+              <label class="dd-com-form-label"><i class="bi bi-calendar-x me-1"></i>Fecha de expiración</label>
+              <input type="date" class="dd-com-form-input" [(ngModel)]="form.fechaExpiracion" name="fechaExpiracion" />
+            </div>
+          </div>
+
+          @if (form.dirigidoA === 'CURSO') {
+          <div class="mb-3">
+            <label class="dd-com-form-label"><i class="bi bi-book me-1"></i>Seleccionar curso</label>
+            @if (loadingCursos) {
+              <div class="dd-com-form-select" style="color: var(--ie-ink-muted);">Cargando cursos...</div>
+            } @else if (cursos.length === 0) {
+              <div class="dd-com-form-select" style="color: var(--ie-ink-muted);">No tienes cursos asignados</div>
+            } @else {
+              <select class="dd-com-form-select" [(ngModel)]="form.cursoId" name="cursoId">
+                <option [value]="null" disabled>Selecciona un curso...</option>
+                @for (c of cursos; track c.idCurso) {
+                  <option [value]="c.idCurso">{{ getCursoLabel(c) }}</option>
+                }
+              </select>
+            }
+          </div>
+          }
+          <div class="dd-com-form-actions">
+            <button type="button" class="dd-com-btn-cancel" (click)="cancelForm()">Cancelar</button>
+            <button class="dd-com-btn-publish" [disabled]="saving">
+              @if (saving) {
+                <span class="dd-com-spinner"></span> Guardando...
+              } @else {
+                <i class="bi" [class.bi-send-fill]="!isEditing" [class.bi-check-lg]="isEditing" [class.me-1]="true"></i> {{ formBtnLabel }}
+              }
+            </button>
+          </div>
+        </form>
+      </div>
     </div>
   }
 
-  <app-comunicados-feed [rolActual]="'DOCENTE'" [key]="refreshKey"></app-comunicados-feed>
+  <!-- ══════════════════════════════════════════════════════════
+       MIS COMUNICADOS — Solo los del docente, con editar/eliminar
+       ══════════════════════════════════════════════════════════ -->
+  <div class="dd-com-section mb-4">
+    <div class="dd-com-section-header">
+      <div class="d-flex align-items-center gap-2">
+        <div class="dd-com-section-icon">
+          <i class="bi bi-person-check"></i>
+        </div>
+        <h2 class="dd-com-section-title mb-0">Mis comunicados</h2>
+        @if (!loadingMisComunicados && misComunicados.length > 0) {
+          <span class="dd-com-badge-count">{{ misComunicados.length }}</span>
+        }
+      </div>
+    </div>
+
+    @if (loadingMisComunicados) {
+      <div class="dd-com-feed-loading">
+        <div class="dd-loading-spinner"></div>
+        <span>Cargando tus comunicados...</span>
+      </div>
+    } @else if (misComunicadosError) {
+      <div class="dd-com-feed-error">
+        <i class="bi bi-exclamation-triangle"></i>
+        <p>{{ misComunicadosError }}</p>
+        <button class="dd-com-feed-retry" (click)="cargarMisComunicados()">
+          <i class="bi bi-arrow-counterclockwise"></i> Reintentar
+        </button>
+      </div>
+    } @else if (misComunicados.length === 0) {
+      <div class="dd-com-feed-empty">
+        <div class="dd-com-feed-empty-icon">
+          <i class="bi bi-pencil-square"></i>
+        </div>
+        <h4 class="dd-com-feed-empty-title">Sin comunicados propios</h4>
+        <p class="dd-com-feed-empty-text">Aún no has publicado ningún comunicado. Usa el botón "Nuevo comunicado" para crear el primero.</p>
+      </div>
+    } @else {
+      <div class="dd-mis-com-list">
+        @for (com of misComunicados; track com.idComunicado) {
+          <div class="dd-mis-com-card">
+            <div class="dd-mis-com-card-body">
+              <div class="dd-mis-com-card-top">
+                <div class="dd-mis-com-card-icon" [style.background]="'linear-gradient(135deg, #7c3aed, #a855f7)'">
+                  <i class="bi bi-megaphone-fill"></i>
+                </div>
+                <div class="dd-mis-com-card-info">
+                  <h3 class="dd-mis-com-card-title">{{ com.titulo }}</h3>
+                  <div class="dd-mis-com-card-meta">
+                    <span class="dd-mis-com-card-date">
+                      <i class="bi bi-calendar3"></i> {{ formatDate(com.fechaPublicacion) }}
+                    </span>
+                    <span class="dd-mis-com-card-badge"
+                      [class.todos]="com.dirigidoA === 'TODOS'"
+                      [class.docente]="com.dirigidoA === 'DOCENTE'"
+                      [class.estudiante]="com.dirigidoA === 'ESTUDIANTE'"
+                      [class.curso]="com.dirigidoA === 'CURSO'">
+                      <i class="bi {{ com.dirigidoA === 'TODOS' ? 'bi-globe2' : com.dirigidoA === 'DOCENTE' ? 'bi-person-video3' : com.dirigidoA === 'ESTUDIANTE' ? 'bi-mortarboard' : com.dirigidoA === 'CURSO' ? 'bi-book' : 'bi-person-badge' }}"></i>
+                      {{ com.dirigidoA === 'TODOS' ? 'Todos' : com.dirigidoA === 'DOCENTE' ? 'Docentes' : com.dirigidoA === 'ESTUDIANTE' ? 'Estudiantes' : com.dirigidoA === 'CURSO' && com.curso ? getCursoLabel(com.curso) : 'Curso' }}
+                    </span>
+                  </div>
+                </div>
+              </div>
+              <p class="dd-mis-com-card-text">{{ com.contenido }}</p>
+            </div>
+            <div class="dd-mis-com-card-actions">
+              <button class="dd-mis-com-btn dd-mis-com-btn-edit" (click)="editar(com)" title="Editar comunicado">
+                <i class="bi bi-pencil"></i>
+                <span>Editar</span>
+              </button>
+              <button class="dd-mis-com-btn dd-mis-com-btn-delete" (click)="confirmDelete(com)" title="Eliminar comunicado">
+                <i class="bi bi-trash3"></i>
+                <span>Eliminar</span>
+              </button>
+            </div>
+          </div>
+        }
+      </div>
+    }
+  </div>
+
+  <!-- ══════════════════════════════════════════════════════════
+       FEED DE COMUNICADOS — Componente compartido
+       ══════════════════════════════════════════════════════════ -->
+  <app-comunicados-feed [rolActual]="'DOCENTE'" [key]="refreshKey" [cursosIds]="cursosIds"></app-comunicados-feed>
+
+  <!-- ═══ DELETE CONFIRM MODAL ═══ -->
+  @if (deleteTarget) {
+    <div class="modal d-block" tabindex="-1">
+      <div class="modal-dialog modal-dialog-centered modal-sm">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title font-display fw-bold mb-0">
+              <i class="bi bi-exclamation-triangle text-danger me-2"></i>Eliminar comunicado
+            </h5>
+            <button type="button" class="btn-close" (click)="deleteTarget = null" [disabled]="deleting"></button>
+          </div>
+          <div class="modal-body">
+            <p class="mb-0">Esta acción no se puede deshacer. ¿Deseas eliminar el comunicado <strong>"{{ deleteTarget.titulo }}"</strong>?</p>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-soft px-3" (click)="deleteTarget = null" [disabled]="deleting">Cancelar</button>
+            <button type="button" class="btn btn-danger px-3" (click)="handleDelete()" [disabled]="deleting">
+              @if (deleting) {
+                <span class="spinner-border spinner-border-sm me-2"></span> Eliminando...
+              } @else {
+                <i class="bi bi-trash3 me-2"></i>Eliminar
+              }
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="modal-backdrop show"></div>
+  }
 </div>

@@ -78,7 +78,19 @@ export class ApiService {
     this.periodos = crud({ listPath: '/periodo/listar', createPath: '/director/periodos', updatePath: '/director/periodos', deletePath: '/admin/periodos' });
     this.docentes = crud({ listPath: '/docente/listar', createPath: '/director/docentes', updatePath: '/director/docentes', deletePath: '/admin/docentes' });
     this.estudiantes = crud({ listPath: '/estudiante/listar', createPath: '/docente/estudiantes', updatePath: '/docente/estudiantes', deletePath: '/admin/estudiantes' });
-    this.comunicados = crud({ listPath: '/comunicado/listar', createPath: '/director/comunicados', updatePath: '/director/comunicados', deletePath: '/admin/comunicados' });
+    this.comunicados = {
+      ...crud({ listPath: '/comunicado/listar', createPath: '/director/comunicados', updatePath: '/director/comunicados', deletePath: '/admin/comunicados' }),
+      marcarLeido: (id: number) => this.http.post(`${api('/comunicados')}/${id}/leer`, {}),
+      listarLeidos: () => this.http.get<number[]>(api('/comunicados/leidos')),
+      // Director puede eliminar
+      eliminarDirector: (id: number) => this.http.delete(`${api('/director/comunicados')}/${id}`),
+      // Docente puede eliminar solo sus propios comunicados
+      eliminarDocente: (id: number) => this.http.delete(`${api('/docente/comunicados')}/${id}`),
+      // Docente puede actualizar
+      actualizarDocente: (id: number, data: any) => this.http.put(`${api('/docente/comunicados')}/${id}`, data),
+      // Docente puede listar sus propios comunicados
+      listarMisComunicados: () => this.http.get<any[]>(api('/docente/comunicados/mios')),
+    };
     this.evaluaciones = crud({ listPath: '/evaluacion/listar', createPath: '/director/evaluaciones', updatePath: '/director/evaluaciones', deletePath: '/admin/evaluaciones' });
     this.horarios = crud({ listPath: '/horario/listar', createPath: '/director/horarios', updatePath: '/director/horarios', deletePath: '/admin/horarios' });
     this.matriculas = crud({ listPath: '/matricula/listar', createPath: '/director/matriculas', updatePath: '/director/matriculas', deletePath: '/admin/matriculas' });

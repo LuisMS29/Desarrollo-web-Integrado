@@ -10,7 +10,7 @@ export class EstudianteLayout {
   sections = [
     {
       title: 'General',
-      items: [{ label: 'Panel principal', route: '/estudiante', icon: 'bi bi-speedometer2', end: true }],
+      items: [{ label: 'Inicio', route: '/estudiante', icon: 'bi bi-speedometer2', end: true }],
     },
     {
       title: 'Mi progreso',
@@ -31,5 +31,6 @@ export class EstudianteLayout {
     },
   ];
   sidebarOpen = false;
-  constructor(public auth: AuthService) {}
+  sidebarCollapsed = false;
+  constructor(public auth: AuthService) { }
 }

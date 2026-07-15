@@ -10,7 +10,7 @@ export class DirectorLayout {
   sections = [
     {
       title: 'General',
-      items: [{ label: 'Panel principal', route: '/director', icon: 'bi bi-speedometer2', end: true }],
+      items: [{ label: 'Inicio', route: '/director', icon: 'bi bi-speedometer2', end: true }],
     },
     {
       title: 'Personas',
@@ -45,5 +45,6 @@ export class DirectorLayout {
     },
   ];
   sidebarOpen = false;
-  constructor(public auth: AuthService) {}
+  sidebarCollapsed = false;
+  constructor(public auth: AuthService) { }
 }

@@ -73,7 +73,7 @@ export class DirectorComunicados {
     ]},
     { key: 'fechaExpiracion', label: 'Fecha de expiración', type: 'date' },
   ];
-  canDelete = false;
+  canDelete = true;
   searchable = true;
   searchPlaceholder = 'Buscar por título o contenido...';
   searchFields = ['titulo', 'contenido'];
@@ -147,4 +147,8 @@ export class DirectorComunicados {
   }
 
   constructor(public api: ApiService) {}
+
+  deleteComunicado(id: number) {
+    return this.api.comunicados.eliminarDirector(id);
+  }
 }

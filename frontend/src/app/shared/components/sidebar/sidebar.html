@@ -1,27 +1,47 @@
-<div class="ie-sidebar" [class.open]="open">
+<div class="ie-sidebar" [class.collapsed]="collapsed" [class.open]="open">
+  <!-- Brand -->
   <div class="ie-sidebar-brand">
-    <div class="mark">IE</div>
-    <div>
-      <div class="name">Intranet Escolar</div>
-      <div class="sub">{{ brandSub }}</div>
+    <div class="mark">
+      <img src="/logo.svg" alt="Logo" class="sidebar-logo-img" />
     </div>
+    @if (!collapsed) {
+      <div>
+        <div class="name">Intranet Escolar</div>
+        <div class="sub">{{ brandSub }}</div>
+      </div>
+    }
   </div>
 
+  <!-- Navigation -->
   <nav class="ie-nav">
     @for (section of sections; track section.title) {
-      <div class="ie-nav-section-title">{{ section.title }}</div>
+      @if (!collapsed) {
+        <div class="ie-nav-section-title">{{ section.title }}</div>
+      }
       @for (item of section.items; track item.route) {
-        <a class="nav-link" [class.active]="isActive(item.route, item.end)" [routerLink]="item.route" (click)="close.emit()">
+        <a class="nav-link" [class.active]="isActive(item.route, item.end)"
+          [routerLink]="item.route" (click)="close.emit()"
+          [title]="collapsed ? item.label : ''">
           <span class="nav-icon"><i [class]="item.icon"></i></span>
-          <span>{{ item.label }}</span>
+          @if (!collapsed) {
+            <span>{{ item.label }}</span>
+          }
         </a>
       }
     }
   </nav>
 
+  <!-- Footer -->
   <div class="ie-sidebar-footer">
-    <button class="btn btn-sm w-100" style="background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.08);color:#94a3b8;font-size:0.8rem;" (click)="onLogout()">
-      <i class="bi bi-box-arrow-right me-1"></i> Cerrar sesión
+    <button class="btn btn-sm w-100 sidebar-logout-btn" (click)="onLogout()">
+      <i class="bi bi-box-arrow-right"></i>
+      @if (!collapsed) {
+        <span class="ms-1">Cerrar sesión</span>
+      }
+    </button>
+    <button class="sidebar-toggle-btn" (click)="onToggleCollapse()"
+      [title]="collapsed ? 'Expandir menú' : 'Colapsar menú'">
+      <i class="bi" [class.bi-chevron-right]="collapsed" [class.bi-chevron-left]="!collapsed"></i>
     </button>
   </div>
 </div>

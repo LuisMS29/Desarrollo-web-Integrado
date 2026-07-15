@@ -1,6 +1,6 @@
 <div class="ie-shell">
-  <app-sidebar [sections]="sections" [open]="sidebarOpen" brandSub="Panel de Administración"
-    (close)="sidebarOpen = false"></app-sidebar>
+  <app-sidebar [sections]="sections" [open]="sidebarOpen" [collapsed]="sidebarCollapsed" brandSub="Panel de Administración"
+    (close)="sidebarOpen = false" (toggleCollapse)="sidebarCollapsed = !sidebarCollapsed"></app-sidebar>
   <div class="ie-main">
     <header class="ie-topbar">
       <div class="d-flex align-items-center gap-2">

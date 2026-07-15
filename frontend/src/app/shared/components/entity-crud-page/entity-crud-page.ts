@@ -55,6 +55,8 @@ export class EntityCrudPage implements OnInit {
   @Input() rowCountLabel = '';
   @Input() colorGradient = 'linear-gradient(135deg, var(--ie-accent), var(--ie-accent-dark))';
   @Input() showRowNumber = false;
+  /** Custom delete function override. If provided, used instead of api.eliminar */
+  @Input() deleteFn?: (id: number) => any;
 
   rows: any[] = [];
   filtered: any[] = [];
@@ -231,7 +233,9 @@ export class EntityCrudPage implements OnInit {
   handleDelete(): void {
     if (!this.deleteTarget) return;
     this.deleteLoading = true;
-    this.api.eliminar(this.deleteTarget[this.idKey]).subscribe({
+    const id = this.deleteTarget[this.idKey];
+    const obs = this.deleteFn ? this.deleteFn(id) : this.api.eliminar(id);
+    obs.subscribe({
       next: () => {
         this.toast.success('Registro eliminado.');
         this.deleteTarget = null;

@@ -1,65 +1,236 @@
-@if (loading) { <app-loading-state label="Cargando notas..."></app-loading-state> }
-@else {
-  <div class="d-flex justify-content-between align-items-center mb-3">
-    <div>
-      <h1 class="font-display fw-bold h3 mb-1">Notas</h1>
-      @if (curso) { <p class="text-secondary mb-0">{{ curso.asignatura?.nombre }} - {{ curso.grado?.nombre }} {{ curso.seccion?.nombre }}</p> }
-    </div>
-  </div>
+<div class="dd-notas">
 
-  @if (matriculas.length === 0) {
-    <div class="ie-card p-4 text-center">
-      <p class="text-secondary mb-0">No hay estudiantes matriculados activamente en este curso.</p>
-    </div>
-  } @else if (evaluaciones.length === 0) {
-    <div class="ie-card p-4 text-center">
-      <p class="text-secondary mb-0">No hay evaluaciones configuradas para el período activo.</p>
+  @if (loading) {
+    <div class="dd-mc-loading">
+      <div class="dd-loading-spinner"></div>
+      <span>Cargando notas...</span>
     </div>
   } @else {
-    <div class="ie-card">
-      <div class="table-responsive">
-        <table class="table ie-table mb-0">
+    <!-- ══════════════════════════════════════════════════════════
+         HERO — Info del curso + métricas
+         ══════════════════════════════════════════════════════════ -->
+    <div class="dd-notas-hero mb-4">
+      <div class="dd-notas-hero-bg">
+        <div class="dd-notas-orbe dd-notas-orbe-1"></div>
+        <div class="dd-notas-orbe dd-notas-orbe-2"></div>
+        <div class="dd-notas-orbe dd-notas-orbe-3"></div>
+      </div>
+      <a [routerLink]="['/docente/cursos']" class="dd-back-btn">
+        <i class="bi bi-arrow-left"></i>
+        <span>Volver a Mis cursos</span>
+      </a>
+      <div class="dd-notas-hero-content">
+        <div class="d-flex align-items-center gap-3">
+          <div class="dd-notas-hero-icon">
+            <i class="bi bi-clipboard-data"></i>
+          </div>
+          <div class="flex-grow-1">
+            <div class="d-flex align-items-center gap-2 flex-wrap">
+              <h1 class="dd-notas-hero-title mb-0">Notas</h1>
+              @if (curso) {
+                <span class="dd-notas-badge" style="background:rgba(2,132,199,0.2);color:#38bdf8;border-color:rgba(2,132,199,0.25);">
+                  {{ curso.grado?.nombre }}{{ curso.seccion?.nombre }}
+                </span>
+              }
+            </div>
+            @if (curso) {
+              <p class="dd-notas-hero-sub mb-0">
+                {{ curso.asignatura?.nombre }} · {{ curso.periodoAcademico?.nombre || '' }}
+              </p>
+            }
+          </div>
+        </div>
+        @if (matriculas.length > 0 && evaluaciones.length > 0) {
+        <div class="dd-notas-hero-stats">
+          <div class="dd-notas-hero-stat">
+            <span class="dd-notas-hero-stat-val">{{ matriculas.length }}</span>
+            <span class="dd-notas-hero-stat-lbl">estudiantes</span>
+          </div>
+          <div class="dd-notas-hero-stat-divider"></div>
+          <div class="dd-notas-hero-stat">
+            <span class="dd-notas-hero-stat-val">{{ evaluaciones.length }}</span>
+            <span class="dd-notas-hero-stat-lbl">evaluaciones</span>
+          </div>
+          <div class="dd-notas-hero-stat-divider"></div>
+          <div class="dd-notas-hero-stat">
+            <span class="dd-notas-hero-stat-val" [style.color]="promedioGeneral >= 14 ? '#34d399' : promedioGeneral >= 11 ? '#fbbf24' : '#fb7185'">
+              {{ promedioGeneral.toFixed(1) }}
+            </span>
+            <span class="dd-notas-hero-stat-lbl">promedio Gral.</span>
+          </div>
+        </div>
+        }
+      </div>
+    </div>
+
+    <!-- ═══ Empty States ═══ -->
+    @if (matriculas.length === 0) {
+      <div class="dd-mc-empty">
+        <div class="dd-mc-empty-icon"><i class="bi bi-people"></i></div>
+        <h3 class="dd-mc-empty-title">Sin estudiantes</h3>
+        <p class="dd-mc-empty-text">No hay estudiantes matriculados activamente en este curso.</p>
+      </div>
+    } @else if (evaluaciones.length === 0) {
+      <div class="dd-mc-empty">
+        <div class="dd-mc-empty-icon"><i class="bi bi-journal-x"></i></div>
+        <h3 class="dd-mc-empty-title">Sin evaluaciones</h3>
+        <p class="dd-mc-empty-text">No hay evaluaciones configuradas para el período activo.</p>
+      </div>
+    } @else {
+      <!-- ══════════════════════════════════════════════════════════
+           BARRA DE EVALUACIONES — Pestañas/pills
+           ══════════════════════════════════════════════════════════ -->
+      <div class="dd-notas-eval-bar mb-3">
+        <div class="dd-notas-eval-label">
+          <i class="bi bi-bar-chart-steps"></i>
+          Evaluaciones:
+        </div>
+        <div class="dd-notas-eval-tabs">
+          @for (e of evaluaciones; track e.idEvaluacion; let i = $index) {
+            <button class="dd-notas-eval-tab" [class.active]="evalActiva === e.idEvaluacion"
+              (click)="setEvalActiva(e.idEvaluacion)">
+              <span class="dd-notas-eval-tab-num">{{ e.nombre }}</span>
+              <span class="dd-notas-eval-tab-prom">{{ promediosPorEval[e.idEvaluacion]?.toFixed(1) ?? '—' }}</span>
+            </button>
+          }
+        </div>
+        <div class="dd-notas-leyenda ms-auto d-none d-md-flex align-items-center gap-3">
+          <span class="dd-notas-leyenda-item"><span class="dd-notas-leyenda-dot" style="background:#10b981"></span> Aprobado (≥14)</span>
+          <span class="dd-notas-leyenda-item"><span class="dd-notas-leyenda-dot" style="background:#f59e0b"></span> En proceso (11-13)</span>
+          <span class="dd-notas-leyenda-item"><span class="dd-notas-leyenda-dot" style="background:#ef4444"></span> Desaprobado (&lt;11)</span>
+        </div>
+      </div>
+
+      <!-- ══════════════════════════════════════════════════════════
+           TABLA DE NOTAS
+           ══════════════════════════════════════════════════════════ -->
+      <div class="dd-notas-table-wrap">
+        <table class="dd-notas-table">
           <thead>
             <tr>
-              <th style="min-width:200px;">Estudiante</th>
+              <th class="dd-notas-th-student">
+                <div class="dd-notas-th-content">
+                  <i class="bi bi-person"></i>
+                  <span>Estudiante</span>
+                </div>
+              </th>
               @for (e of evaluaciones; track e.idEvaluacion) {
-                <th class="text-center" style="min-width:140px;">{{ e.nombre }}</th>
+                <th class="dd-notas-th-eval" [class.active]="evalActiva === e.idEvaluacion">
+                  <div class="dd-notas-th-eval-content">
+                    <span class="dd-notas-th-eval-name">{{ e.nombre }}</span>
+                    <span class="dd-notas-th-eval-prom">
+                      Prom: <strong>{{ promediosPorEval[e.idEvaluacion]?.toFixed(1) ?? '—' }}</strong>
+                    </span>
+                  </div>
+                </th>
               }
             </tr>
           </thead>
           <tbody>
-            @for (m of matriculas; track m.idMatricula) {
-              <tr>
-                <td>{{ m.estudiante?.nombres }} {{ m.estudiante?.apellidos }}</td>
-                @for (e of evaluaciones; track e.idEvaluacion) {
-                  <td class="text-center align-middle" style="min-width:140px;">
-                    <div class="d-flex align-items-center gap-1 justify-content-center">
-                      <input type="number" step="0.1" min="0" max="20" class="form-control form-control-sm text-center"
-                        style="width:70px;" [value]="getValor(m.idMatricula, e.idEvaluacion)"
-                        (input)="setValor(m.idMatricula, e.idEvaluacion, $any($event.target).value)" />
-                      <button class="btn btn-sm btn-outline-primary"
-                        [disabled]="isSaving(m.idMatricula, e.idEvaluacion)"
-                        (click)="guardarNota(m.idMatricula, e.idEvaluacion)">
-                        @if (isSaving(m.idMatricula, e.idEvaluacion)) {
-                          <span class="spinner-border spinner-border-sm"></span>
-                        } @else {
-                          {{ getValor(m.idMatricula, e.idEvaluacion) ? 'Actualizar' : 'Guardar' }}
-                        }
-                      </button>
+            @for (m of matriculas; track m.idMatricula; let i = $index) {
+              <tr class="dd-notas-tr" [style.--tr-delay]="i * 0.03 + 's'">
+                <!-- Student column -->
+                <td class="dd-notas-td-student">
+                  <div class="dd-notas-student-info">
+                    <div class="dd-notas-student-avatar" [style.background]="getStudentColor(i)">
+                      {{ (m.estudiante?.nombres || '?').charAt(0) }}{{ (m.estudiante?.apellidos || '').charAt(0) }}
                     </div>
-                    <div class="mt-1">
-                      <input type="text" class="form-control form-control-sm" placeholder="Observación"
-                        style="width:130px;font-size:0.75rem;" [value]="getObservacion(m.idMatricula, e.idEvaluacion)"
-                        (input)="setObservacion(m.idMatricula, e.idEvaluacion, $any($event.target).value)"
-                        (blur)="guardarNota(m.idMatricula, e.idEvaluacion)" />
+                    <div class="dd-notas-student-name">
+                      <span>{{ m.estudiante?.nombres }} {{ m.estudiante?.apellidos }}</span>
+                      @if (m.estudiante?.codigoEstudiante) {
+                        <small>{{ m.estudiante.codigoEstudiante }}</small>
+                      }
+                    </div>
+                  </div>
+                </td>
+                <!-- Evaluation columns -->
+                @for (e of evaluaciones; track e.idEvaluacion) {
+                  <td class="dd-notas-td-eval" [class.active]="evalActiva === e.idEvaluacion">
+                    <div class="dd-notas-cell">
+                      <!-- Grade input -->
+                      <div class="dd-notas-grade-wrap">
+                        <input type="number" step="0.1" min="0" max="20"
+                          class="dd-notas-grade-input"
+                          [class.dd-grade-high]="getValorNum(m.idMatricula, e.idEvaluacion) >= 14"
+                          [class.dd-grade-mid]="getValorNum(m.idMatricula, e.idEvaluacion) >= 11 && getValorNum(m.idMatricula, e.idEvaluacion) < 14"
+                          [class.dd-grade-low]="getValorNum(m.idMatricula, e.idEvaluacion) > 0 && getValorNum(m.idMatricula, e.idEvaluacion) < 11"
+                          [value]="getValor(m.idMatricula, e.idEvaluacion)"
+                          (input)="setValor(m.idMatricula, e.idEvaluacion, $any($event.target).value)"
+                          (keydown.enter)="guardarNota(m.idMatricula, e.idEvaluacion)"
+                          placeholder="—">
+                        @if (getValor(m.idMatricula, e.idEvaluacion)) {
+                          <div class="dd-notas-grade-status"
+                            [class.dd-status-high]="getValorNum(m.idMatricula, e.idEvaluacion) >= 14"
+                            [class.dd-status-mid]="getValorNum(m.idMatricula, e.idEvaluacion) >= 11 && getValorNum(m.idMatricula, e.idEvaluacion) < 14"
+                            [class.dd-status-low]="getValorNum(m.idMatricula, e.idEvaluacion) < 11">
+                          </div>
+                        }
+                      </div>
+                      <!-- Action row -->
+                      <div class="dd-notas-cell-actions">
+                        <button class="dd-notas-save-btn"
+                          [disabled]="isSaving(m.idMatricula, e.idEvaluacion)"
+                          (click)="guardarNota(m.idMatricula, e.idEvaluacion)">
+                          @if (isSaving(m.idMatricula, e.idEvaluacion)) {
+                            <span class="dd-notas-spinner"></span>
+                          } @else {
+                            <i class="bi {{ getValor(m.idMatricula, e.idEvaluacion) ? 'bi-check-lg' : 'bi-plus-lg' }}"></i>
+                          }
+                        </button>
+                        <!-- Observación toggle -->
+                        <button class="dd-notas-obs-btn"
+                          [class.has-obs]="getObservacion(m.idMatricula, e.idEvaluacion)"
+                          (click)="toggleObs(m.idMatricula, e.idEvaluacion)"
+                          title="Observación">
+                          <i class="bi bi-chat-dots"></i>
+                        </button>
+                      </div>
+                      <!-- Observación input -->
+                      @if (obsAbierta === m.idMatricula + '_' + e.idEvaluacion) {
+                        <div class="dd-notas-obs-panel">
+                          <input type="text" class="dd-notas-obs-input"
+                            placeholder="Observación..."
+                            [value]="getObservacion(m.idMatricula, e.idEvaluacion)"
+                            (input)="setObservacion(m.idMatricula, e.idEvaluacion, $any($event.target).value)"
+                            (blur)="guardarNota(m.idMatricula, e.idEvaluacion)">
+                        </div>
+                      }
                     </div>
                   </td>
                 }
               </tr>
             }
           </tbody>
+          <!-- Promedio row -->
+          <tfoot>
+            <tr class="dd-notas-tr-foot">
+              <td class="dd-notas-td-foot-label">
+                <i class="bi bi-calculator me-1"></i> Promedio
+              </td>
+              @for (e of evaluaciones; track e.idEvaluacion) {
+                <td class="dd-notas-td-foot-val">
+                  <span class="dd-notas-foot-prom"
+                    [style.color]="(promediosPorEval[e.idEvaluacion] ?? 0) >= 14 ? '#10b981' : (promediosPorEval[e.idEvaluacion] ?? 0) >= 11 ? '#f59e0b' : '#ef4444'">
+                    {{ promediosPorEval[e.idEvaluacion]?.toFixed(1) ?? '—' }}
+                  </span>
+                </td>
+              }
+            </tr>
+          </tfoot>
         </table>
       </div>
-    </div>
+
+      <!-- ═══ Footer ═══ -->
+      <div class="dd-notas-footer mt-3">
+        <span class="dd-notas-footer-info">
+          <i class="bi bi-info-circle"></i>
+          Presiona <kbd>Enter</kbd> para guardar rápidamente. Las notas van de 0 a 20.
+        </span>
+        <span class="dd-notas-footer-sync" [class.synced]="!savingCell">
+          <i class="bi {{ savingCell ? 'bi-arrow-repeat spinner' : 'bi-check-circle-fill' }}"></i>
+          {{ savingCell ? 'Guardando...' : 'Todos los cambios guardados' }}
+        </span>
+      </div>
+    }
   }
-}
+</div>

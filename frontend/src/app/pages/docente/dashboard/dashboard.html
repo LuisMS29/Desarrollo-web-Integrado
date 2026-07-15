@@ -1,272 +1,216 @@
-<div class="dashboard-page stagger-children">
-  <!-- ════════════════════════════════════════════════
-       HERO — Saludo personal + datos del docente
-       ════════════════════════════════════════════════ -->
-  <div class="admin-hero mb-4">
-    <div class="admin-hero-glow"></div>
-    <div class="admin-hero-bg-shape admin-hero-shape-1"></div>
-    <div class="admin-hero-bg-shape admin-hero-shape-2"></div>
-    <div class="position-relative d-flex flex-wrap align-items-center justify-content-between gap-3">
-      <div class="d-flex align-items-center gap-3">
-        <div class="admin-hero-avatar" style="background:linear-gradient(135deg,#0284c7,#38bdf8);">
-          <span>{{ docente?.nombres?.charAt(0)?.toUpperCase() || auth.user()?.username?.charAt(0)?.toUpperCase() || 'D' }}</span>
-        </div>
-        <div>
-          <div class="d-flex align-items-center gap-2 mb-1">
-            <h1 class="admin-hero-title mb-0">
-              <i class="bi {{ greetingIcon }} me-2"></i>{{ greeting }}, {{ docente?.nombres?.split(' ')[0] || auth.user()?.username }}
-            </h1>
-            <span class="admin-hero-badge" style="background:rgba(2,132,199,0.15);color:#38bdf8;border-color:rgba(2,132,199,0.2);">
-              <i class="bi bi-person-video3 me-1"></i>Docente
-            </span>
+<div class="docente-dashboard">
+
+  <!-- ══════════════════════════════════════════════════════════
+       HERO — Saludo personal + métricas con diseño mejorado
+       ══════════════════════════════════════════════════════════ -->
+  <div class="dd-hero mb-4">
+    <div class="dd-hero-bg">
+      <div class="dd-hero-orbe dd-hero-orbe-1"></div>
+      <div class="dd-hero-orbe dd-hero-orbe-2"></div>
+      <div class="dd-hero-orbe dd-hero-orbe-3"></div>
+    </div>
+    <div class="dd-hero-grid">
+      <div class="dd-hero-main">
+        <div class="d-flex align-items-center gap-3 mb-2">
+          <div class="dd-avatar">
+            <span>{{ docente?.nombres?.charAt(0)?.toUpperCase() || auth.user()?.username?.charAt(0)?.toUpperCase() || 'D' }}</span>
           </div>
-          <p class="admin-hero-subtitle mb-0">
-            @if (docente?.especialidad) {
-              <i class="bi bi-star me-1"></i>{{ docente.especialidad }} ·
-            }
-            <i class="bi bi-person-badge me-1"></i>Código {{ docente?.codigoDocente || '—' }}
-          </p>
+          <div>
+            <div class="d-flex align-items-center gap-2 flex-wrap">
+              <h1 class="dd-hero-title mb-0">
+                {{ greeting }}, {{ docente?.nombres?.split(' ')[0] || auth.user()?.username }}
+              </h1>
+              <span class="dd-badge-dd">
+                <i class="bi bi-person-video3 me-1"></i>Docente
+              </span>
+            </div>
+            <p class="dd-hero-sub mb-0">
+              @if (docente?.especialidad) {
+                <span class="dd-hero-tag"><i class="bi bi-star-fill"></i> {{ docente.especialidad }}</span>
+              }
+              <span class="dd-hero-tag"><i class="bi bi-person-badge"></i> Código {{ docente?.codigoDocente || '—' }}</span>
+            </p>
+          </div>
         </div>
       </div>
-      <div class="admin-hero-stats-mini">
-        <div class="admin-hero-stat-mini">
-          <span class="admin-hero-stat-mini-value">{{ cursos.length }}</span>
-          <span class="admin-hero-stat-mini-label">cursos a cargo</span>
+      <div class="dd-hero-stats">
+        <div class="dd-hero-stat dd-hero-stat-hover" style="--stat-i:0">
+          <div class="dd-hero-stat-icon" style="background:linear-gradient(135deg,#0284c7,#38bdf8)">
+            <i class="bi bi-journal-bookmark-fill"></i>
+          </div>
+          <div class="dd-hero-stat-body">
+            <span class="dd-hero-stat-value">{{ cursos.length }}</span>
+            <span class="dd-hero-stat-label">Cursos activos</span>
+          </div>
         </div>
-        <div class="admin-hero-stat-mini-divider"></div>
-        <div class="admin-hero-stat-mini">
-          <span class="admin-hero-stat-mini-value">{{ totalEstudiantes() }}</span>
-          <span class="admin-hero-stat-mini-label">estudiantes</span>
+        <div class="dd-hero-stat dd-hero-stat-hover" style="--stat-i:1">
+          <div class="dd-hero-stat-icon" style="background:linear-gradient(135deg,#10b981,#34d399)">
+            <i class="bi bi-people-fill"></i>
+          </div>
+          <div class="dd-hero-stat-body">
+            <span class="dd-hero-stat-value">{{ totalEstudiantes() }}</span>
+            <span class="dd-hero-stat-label">Estudiantes</span>
+          </div>
         </div>
-        @if (cursos.length > 0) {
-        <div class="admin-hero-stat-mini-divider"></div>
-        <div class="admin-hero-stat-mini">
-          <span class="admin-hero-stat-mini-value" style="font-size:0.95rem;">{{ promedioPorCurso }}</span>
-          <span class="admin-hero-stat-mini-label">promedio/curso</span>
+        <div class="dd-hero-stat dd-hero-stat-hover" style="--stat-i:2">
+          <div class="dd-hero-stat-icon" style="background:linear-gradient(135deg,#8b5cf6,#a78bfa)">
+            <i class="bi bi-bar-chart-fill"></i>
+          </div>
+          <div class="dd-hero-stat-body">
+            <span class="dd-hero-stat-value">{{ promedioPorCurso }}</span>
+            <span class="dd-hero-stat-label">Promedio/curso</span>
+          </div>
         </div>
-        }
       </div>
     </div>
   </div>
 
   @if (loading) {
-    <app-loading-state label="Cargando tu información..."></app-loading-state>
+    <div class="dd-loading">
+      <div class="dd-loading-spinner"></div>
+      <span>Cargando tu información...</span>
+    </div>
   } @else {
 
-    <!-- ════════════════════════════════════════════════
-         MÉTRICAS — Tarjetas de indicadores clave
-         ════════════════════════════════════════════════ -->
-    <div class="admin-metrics-grid mb-4">
-      <!-- Cursos a cargo -->
-      <div class="admin-metric-link" style="--metric-delay:0s">
-        <div class="admin-metric-card">
-          <div class="admin-metric-top" style="background:#0284c714;">
-            <div class="admin-metric-icon" style="background:#0284c722;color:#0284c7;">
-              <i class="bi bi-journal-bookmark-fill"></i>
-            </div>
-            <div class="admin-metric-pulse" style="background:#0284c730;"></div>
-          </div>
-          <div class="admin-metric-body">
-            <div class="admin-metric-label">Cursos a cargo</div>
-            <div class="admin-metric-value">{{ cursos.length }}</div>
-          </div>
-          <div class="admin-metric-footer">
-            <a [routerLink]="['/docente/cursos']" class="admin-metric-action text-decoration-none">
-              <i class="bi bi-journal-text me-1"></i>Ir a mis cursos
-              <i class="bi bi-arrow-right ms-1"></i>
-            </a>
-          </div>
-        </div>
-      </div>
-
-      <!-- Estudiantes total -->
-      <div class="admin-metric-link" style="--metric-delay:0.05s">
-        <div class="admin-metric-card">
-          <div class="admin-metric-top" style="background:#10b98114;">
-            <div class="admin-metric-icon" style="background:#10b98122;color:var(--ie-success);">
-              <i class="bi bi-people-fill"></i>
-            </div>
-            <div class="admin-metric-pulse" style="background:#10b98130;"></div>
-          </div>
-          <div class="admin-metric-body">
-            <div class="admin-metric-label">Estudiantes a cargo</div>
-            <div class="admin-metric-value">{{ totalEstudiantes() }}</div>
-          </div>
-          <div class="admin-metric-footer">
-            <a [routerLink]="['/docente/estudiantes']" class="admin-metric-action text-decoration-none">
-              <i class="bi bi-person-video3 me-1"></i>Ver lista
-              <i class="bi bi-arrow-right ms-1"></i>
-            </a>
-          </div>
-        </div>
-      </div>
-
-      <!-- Promedio por curso -->
-      <div class="admin-metric-link" style="--metric-delay:0.10s">
-        <div class="admin-metric-card">
-          <div class="admin-metric-top" style="background:#8b5cf614;">
-            <div class="admin-metric-icon" style="background:#8b5cf622;color:#8b5cf6;">
-              <i class="bi bi-calculator"></i>
-            </div>
-            <div class="admin-metric-pulse" style="background:#8b5cf630;"></div>
-          </div>
-          <div class="admin-metric-body">
-            <div class="admin-metric-label">Promedio estudiantes/curso</div>
-            <div class="admin-metric-value">{{ promedioPorCurso }}</div>
-          </div>
-          <div class="admin-metric-footer">
-            <span class="admin-metric-action">
-              <i class="bi bi-bar-chart-line me-1"></i>Distribución
-              <i class="bi bi-arrow-right ms-1"></i>
-            </span>
-          </div>
-        </div>
-      </div>
-
-      <!-- Docente info -->
-      <div class="admin-metric-link" style="--metric-delay:0.15s">
-        <div class="admin-metric-card">
-          <div class="admin-metric-top" style="background:#f59e0b14;">
-            <div class="admin-metric-icon" style="background:#f59e0b22;color:var(--ie-accent);">
-              <i class="bi bi-person-badge"></i>
-            </div>
-            <div class="admin-metric-pulse" style="background:#f59e0b30;"></div>
-          </div>
-          <div class="admin-metric-body">
-            <div class="admin-metric-label">Código docente</div>
-            <div class="admin-metric-value" style="font-size:1.3rem;font-family:'JetBrains Mono',monospace;">{{ docente?.codigoDocente || '—' }}</div>
-          </div>
-          <div class="admin-metric-footer">
-            <span class="admin-metric-action">
-              <i class="bi bi-person-circle me-1"></i>Mi perfil
-              <i class="bi bi-arrow-right ms-1"></i>
-            </span>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- ════════════════════════════════════════════════
-         GRÁFICO Y ACCESOS RÁPIDOS — Sección principal
-         ════════════════════════════════════════════════ -->
-    <div class="row g-4">
-      <!-- Distribución de estudiantes por curso -->
+    <!-- ══════════════════════════════════════════════════════════
+         DISTRIBUCIÓN DE ESTUDIANTES + COMUNICADOS RECIENTES
+         — En la misma fila (8 cols + 4 cols)
+         ══════════════════════════════════════════════════════════ -->
+    <div class="row g-4 mb-4">
       @if (estudiantesPorCurso.length > 0) {
       <div class="col-lg-8">
-        <div class="admin-card">
-          <div class="admin-card-header">
+        <div class="dd-card dd-card-premium">
+          <div class="dd-card-accent" style="background:linear-gradient(90deg,#10b981,#34d399,#a7f3d0)"></div>
+          <div class="dd-card-header">
             <div class="d-flex align-items-center gap-3">
-              <div class="admin-card-icon" style="background:linear-gradient(135deg,#10b981,#34d399);color:#fff;">
+              <div class="dd-card-header-icon" style="background:linear-gradient(135deg,#10b981,#34d399);color:#fff;">
                 <i class="bi bi-bar-chart-steps"></i>
               </div>
               <div>
-                <h2 class="admin-card-title">Estudiantes por curso</h2>
-                <span class="admin-card-subtitle">Distribución de alumnos en tus cursos</span>
+                <h2 class="dd-card-title">Distribución de estudiantes</h2>
+                <span class="dd-card-sub">Alumnos matriculados por curso</span>
               </div>
             </div>
-            <div class="admin-card-badge">
-              <span class="admin-card-badge-value">{{ totalEstudiantes() }}</span>
-              <span class="admin-card-badge-label">total alumnos</span>
+            <div class="dd-card-badge">
+              <span class="dd-card-badge-num">{{ totalEstudiantes() }}</span>
+              <span class="dd-card-badge-lbl">total alumnos</span>
             </div>
           </div>
-          <div class="admin-card-body">
-            <!-- Stacked bar overview -->
+          <div class="dd-card-body">
             @if (estudiantesPorCurso.length > 1) {
-            <div class="admin-stacked-section mb-3">
-              <div class="admin-stacked-label">Composición por curso</div>
-              <div class="admin-stacked-bar">
+            <div class="dd-stacked-section mb-3">
+              <div class="dd-stacked-label">Composición por curso</div>
+              <div class="dd-stacked-bar">
                 @for (e of estudiantesPorCurso; track e.curso.idCurso; let i = $index) {
                   @if (e.count > 0) {
-                  <div class="admin-stacked-seg"
+                  <div class="dd-stacked-seg"
                     [style.width.%]="(e.count / totalEstudiantes()) * 100"
-                    [style.background]="['#0284c7','#10b981','#8b5cf6','#f59e0b','#f43f5e','#14b8a6'][i % 6]"
-                    [style.--seg-delay]="i * 0.1 + 's'"
-                    [attr.title]="e.curso.asignatura?.nombre + ': ' + e.count">
+                    [style.background]="cursoGradients[i % cursoGradients.length]"
+                    [style.--seg-delay]="i * 0.08 + 's'"
+                    title="{{ e.curso.asignatura?.nombre }}: {{ e.count }}">
                   </div>
                   }
                 }
               </div>
-              <div class="admin-stacked-legend">
+              <div class="dd-stacked-legend">
                 @for (e of estudiantesPorCurso; track e.curso.idCurso; let i = $index) {
                   @if (e.count > 0) {
-                  <span class="admin-stacked-legend-item">
-                    <span class="admin-stacked-legend-dot" [style.background]="['#0284c7','#10b981','#8b5cf6','#f59e0b','#f43f5e','#14b8a6'][i % 6]"></span>
+                  <span class="dd-stacked-legend-item">
+                    <span class="dd-stacked-dot" [style.background]="cursoBarColors[i % cursoBarColors.length]"></span>
                     {{ e.curso.asignatura?.nombre }}
+                    <span class="dd-stacked-count">{{ e.count }}</span>
                   </span>
                   }
                 }
               </div>
             </div>
-            <div class="admin-distrib-divider"></div>
+            <div class="dd-divider"></div>
             }
 
-            <!-- Individual bars -->
             @for (e of estudiantesPorCurso; track e.curso.idCurso; let i = $index) {
-            <div class="admin-bar-row" [style.--bar-delay]="i * 0.07 + 's'">
-              <div class="admin-bar-label">
-                <div class="admin-bar-label-text">
-                  <div class="admin-bar-dot" [style.background]="['#0284c7','#10b981','#8b5cf6','#f59e0b','#f43f5e','#14b8a6'][i % 6]"></div>
-                  <span>{{ e.curso.asignatura?.nombre }} · {{ e.curso.grado?.nombre }}{{ e.curso.seccion?.nombre }}</span>
+            <div class="dd-bar-row" [style.--bar-delay]="i * 0.06 + 's'">
+              <div class="dd-bar-label">
+                <div class="dd-bar-label-text">
+                  <span class="dd-bar-dot" [style.background]="cursoBarColors[i % cursoBarColors.length]"></span>
+                  <span class="dd-bar-name">{{ e.curso.asignatura?.nombre }}</span>
+                  <span class="dd-bar-sec">{{ e.curso.grado?.nombre }}{{ e.curso.seccion?.nombre }}</span>
                 </div>
-                <div class="admin-bar-label-right">
-                  <span class="admin-bar-count">{{ e.count }}</span>
-                  <span class="admin-bar-pct">{{ (e.count / maxEst() * 100).toFixed(0) }}%</span>
+                <div class="dd-bar-right">
+                  <span class="dd-bar-count">{{ e.count }}</span>
+                  <span class="dd-bar-pct">{{ maxEst() > 0 ? (e.count / maxEst() * 100).toFixed(0) : 0 }}%</span>
                 </div>
               </div>
-              <div class="admin-bar-track">
-                <div class="admin-bar-fill"
-                  [style.width.%]="(e.count / maxEst()) * 100"
-                  [style.background]="['#0284c7','#10b981','#8b5cf6','#f59e0b','#f43f5e','#14b8a6'][i % 6]">
-                </div>
-                <div class="admin-bar-glow"
-                  [style.background]="['#0284c7','#10b981','#8b5cf6','#f59e0b','#f43f5e','#14b8a6'][i % 6]"
-                  [style.left.%]="(e.count / maxEst()) * 100">
+              <div class="dd-bar-track">
+                <div class="dd-bar-fill"
+                  [style.width.%]="maxEst() > 0 ? (e.count / maxEst()) * 100 : 0"
+                  [style.background]="'linear-gradient(90deg, ' + cursoBarColors[i % cursoBarColors.length] + ', ' + cursoBarLightColors[i % cursoBarLightColors.length] + ')'">
+                  <div class="dd-bar-shine"></div>
                 </div>
               </div>
             </div>
             }
           </div>
+          <div class="dd-card-footer-glow"></div>
         </div>
       </div>
       }
 
-      <!-- Accesos rápidos -->
-      <div [class.col-lg-4]="estudiantesPorCurso.length > 0" [class.col-lg-12]="estudiantesPorCurso.length === 0">
-        <div class="admin-card" style="height:100%;">
-          <div class="admin-card-header">
+      <!-- Comunicados — 4 columnas al lado de distribución -->
+      <div class="col-lg-4">
+        <div class="dd-card dd-card-premium dd-card-full-height">
+          <div class="dd-card-accent" style="background:linear-gradient(90deg,#7c3aed,#a855f7,#d8b4fe)"></div>
+          <div class="dd-card-header">
             <div class="d-flex align-items-center gap-3">
-              <div class="admin-card-icon" style="background:linear-gradient(135deg,#f59e0b,#d97706);color:#fff;">
-                <i class="bi bi-lightning-charge"></i>
+              <div class="dd-card-header-icon" style="background:linear-gradient(135deg,#7c3aed,#a855f7);color:#fff;">
+                <i class="bi bi-megaphone-fill"></i>
               </div>
               <div>
-                <h2 class="admin-card-title">Accesos rápidos</h2>
-                <span class="admin-card-subtitle">Atajos a las secciones más usadas</span>
+                <h2 class="dd-card-title">Comunicados recientes</h2>
+                <span class="dd-card-sub">Últimos avisos institucionales</span>
               </div>
             </div>
+            <a [routerLink]="['/docente/comunicados']" class="dd-link-all">
+              <span>Ver todos</span>
+              <i class="bi bi-arrow-right"></i>
+            </a>
           </div>
-          <div class="admin-card-body d-flex flex-column gap-2" style="justify-content:center;">
-            @for (action of quickActions; track action.route) {
-              <a [routerLink]="action.route" class="admin-action-link">
-                <div class="admin-action-card">
-                  <div class="admin-action-bg" [style.background]="action.gradient"></div>
-                  <div class="admin-action-content">
-                    <div class="admin-action-icon">
-                      <i class="bi {{ action.icon }}"></i>
+          <div class="dd-card-body">
+            @if (comunicados.length > 0) {
+              <div class="dd-com-timeline">
+                @for (com of comunicados.slice(0, 3); track com.idComunicado; let ci = $index) {
+                  <div class="dd-com-item" [style.--com-delay]="ci * 0.1 + 's'">
+                    <div class="dd-com-line">
+                      <div class="dd-com-dot" [style.background]="getComColor(com.titulo)"></div>
+                      @if (ci < 2) { <div class="dd-com-connector"></div> }
                     </div>
-                    <div class="admin-action-info">
-                      <div class="admin-action-title">{{ action.title }}</div>
-                      <div class="admin-action-desc">{{ action.desc }}</div>
+                    <div class="dd-com-content">
+                      <div class="dd-com-header">
+                        <span class="dd-com-badge" [style.background]="getComColor(com.titulo) + '22'" [style.color]="getComColor(com.titulo)">
+                          <i class="bi bi-megaphone"></i>
+                        </span>
+                        <span class="dd-com-date"><i class="bi bi-calendar3"></i> {{ com.fechaPublicacion | date:'shortDate' }}</span>
+                      </div>
+                      <div class="dd-com-title">{{ com.titulo }}</div>
+                      @if (com.remitente) {
+                      <div class="dd-com-author">
+                        <i class="bi bi-person-circle"></i> {{ com.remitente }}
+                      </div>
+                      }
                     </div>
                   </div>
-                  <div class="admin-action-arrow">
-                    <i class="bi bi-arrow-up-right"></i>
-                  </div>
-                </div>
-              </a>
+                }
+              </div>
+            } @else {
+              <div class="dd-empty-state">
+                <i class="bi bi-megaphone"></i>
+                <span>No hay comunicados recientes</span>
+              </div>
             }
           </div>
+          <div class="dd-card-footer-glow"></div>
         </div>
       </div>
     </div>
+
   }
 </div>

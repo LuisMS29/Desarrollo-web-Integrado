@@ -22,8 +22,10 @@ export interface NavSection {
 export class Sidebar {
   @Input() sections: NavSection[] = [];
   @Input() open = false;
+  @Input() collapsed = false;
   @Input() brandSub = '';
   @Output() close = new EventEmitter<void>();
+  @Output() toggleCollapse = new EventEmitter<void>();
 
   constructor(
     public auth: AuthService,
@@ -37,5 +39,9 @@ export class Sidebar {
 
   onLogout(): void {
     this.auth.logout();
+  }
+
+  onToggleCollapse(): void {
+    this.toggleCollapse.emit();
   }
 }

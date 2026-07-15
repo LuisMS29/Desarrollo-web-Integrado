@@ -1,47 +1,234 @@
-<div>
-  <div class="mb-4">
-    <h1 class="font-display fw-bold h3 mb-1">Mis notas</h1>
-    <p class="text-secondary mb-0">Calificaciones obtenidas en cada curso.</p>
+<div class="ee-dashboard">
+
+  <!-- ═══ Hero ═══ -->
+  <div class="ee-hero mb-4">
+    <div class="ee-hero-bg">
+      <div class="ee-hero-orbe ee-hero-orbe-1"></div>
+      <div class="ee-hero-orbe ee-hero-orbe-2"></div>
+      <div class="ee-hero-orbe ee-hero-orbe-3"></div>
+    </div>
+    <div class="ee-hero-content">
+      <div class="ee-hero-main">
+        <div class="ee-hero-avatar-wrap">
+          <div class="ee-hero-avatar" style="background:linear-gradient(135deg,#0284c7,#38bdf8);">
+            <i class="bi bi-clipboard-data-fill"></i>
+          </div>
+          <div class="ee-hero-avatar-ring"></div>
+        </div>
+        <div class="ee-hero-info">
+          <h1 class="ee-hero-title mb-0">Mis notas</h1>
+          <p class="ee-hero-sub mb-0">
+            <i class="bi bi-mortarboard me-1"></i>Calificaciones obtenidas en cada curso
+          </p>
+        </div>
+      </div>
+      @if (!loading) {
+        <div class="ee-hero-stats">
+          <div class="ee-hero-stat">
+            <span class="ee-hero-stat-val" [style.color]="promedioGlobal >= 14 ? '#34d399' : promedioGlobal >= 11 ? '#fbbf24' : '#f87171'">{{ promedioGlobal | number:'1.1-1' }}</span>
+            <span class="ee-hero-stat-lbl">promedio</span>
+          </div>
+          <div class="ee-hero-stat-divider"></div>
+          <div class="ee-hero-stat">
+            <span class="ee-hero-stat-val">{{ totalAprobados }}/{{ distinctCursos }}</span>
+            <span class="ee-hero-stat-lbl">aprobados</span>
+          </div>
+        </div>
+      }
+    </div>
   </div>
 
   @if (loading) {
-    <app-loading-state label="Cargando tus notas..."></app-loading-state>
-  } @else if (matriculas.length === 0) {
-    <div class="ie-card p-4 text-center py-5"><p class="text-secondary mb-0">No estás matriculado en ningún curso.</p></div>
+    <div class="ee-loading">
+      <div class="ee-loading-spinner"></div>
+      <span>Cargando tus notas...</span>
+    </div>
+  } @else if (cursos.length === 0) {
+    <div class="dd-com-feed-empty">
+      <div class="dd-com-feed-empty-icon">
+        <i class="bi bi-journal-x"></i>
+      </div>
+      <h4 class="dd-com-feed-empty-title">Sin cursos</h4>
+      <p class="dd-com-feed-empty-text">No estás matriculado en ningún curso actualmente.</p>
+    </div>
   } @else {
-    @for (m of matriculas; track m.idMatricula) {
-      <div class="ie-card p-4 mb-3">
-        <h2 class="font-display h5 fw-bold mb-1">{{ m.curso?.asignatura?.nombre || '—' }}</h2>
-        <p class="text-secondary small mb-3">{{ m.curso?.grado?.nombre }}{{ m.curso?.seccion?.nombre }} · Docente: {{ m.curso?.docente?.nombres }} {{ m.curso?.docente?.apellidos }}</p>
+    <!-- ═══ Stats Cards ═══ -->
+    <div class="admin-metrics-grid mb-4">
+      <div class="admin-metric-link" style="--metric-delay:0s">
+        <div class="admin-metric-card">
+          <div class="admin-metric-top" style="background:rgba(5,150,105,0.1);">
+            <div class="admin-metric-icon" style="background:rgba(5,150,105,0.2);color:#059669;">
+              <i class="bi bi-bookmark-check-fill"></i>
+            </div>
+            <div class="admin-metric-pulse" style="background:rgba(5,150,105,0.2);"></div>
+          </div>
+          <div class="admin-metric-body">
+            <div class="admin-metric-label">Cursos</div>
+            <div class="admin-metric-value">{{ distinctCursos }}</div>
+          </div>
+        </div>
+      </div>
+      <div class="admin-metric-link" style="--metric-delay:0.06s">
+        <div class="admin-metric-card">
+          <div class="admin-metric-top" style="background:rgba(2,132,199,0.1);">
+            <div class="admin-metric-icon" style="background:rgba(2,132,199,0.2);color:#0284c7;">
+              <i class="bi bi-layers-fill"></i>
+            </div>
+            <div class="admin-metric-pulse" style="background:rgba(2,132,199,0.2);"></div>
+          </div>
+          <div class="admin-metric-body">
+            <div class="admin-metric-label">Evaluaciones</div>
+            <div class="admin-metric-value">{{ totalEvaluaciones }}</div>
+          </div>
+        </div>
+      </div>
+      <div class="admin-metric-link" style="--metric-delay:0.12s">
+        <div class="admin-metric-card">
+          <div class="admin-metric-top" style="background:rgba(124,58,237,0.1);">
+            <div class="admin-metric-icon" style="background:rgba(124,58,237,0.2);color:#7c3aed;">
+              <i class="bi bi-trophy-fill"></i>
+            </div>
+            <div class="admin-metric-pulse" style="background:rgba(124,58,237,0.2);"></div>
+          </div>
+          <div class="admin-metric-body">
+            <div class="admin-metric-label">Aprobados</div>
+            <div class="admin-metric-value">{{ totalAprobados }}</div>
+          </div>
+        </div>
+      </div>
+      <div class="admin-metric-link" style="--metric-delay:0.18s">
+        <div class="admin-metric-card">
+          <div class="admin-metric-top" [style.background]="(promedioGlobal >= 14 ? '#059669' : promedioGlobal >= 11 ? '#f59e0b' : '#ef4444') + '14'">
+            <div class="admin-metric-icon" [style.background]="(promedioGlobal >= 14 ? '#059669' : promedioGlobal >= 11 ? '#f59e0b' : '#ef4444') + '22'"
+              [style.color]="promedioGlobal >= 14 ? '#059669' : promedioGlobal >= 11 ? '#f59e0b' : '#ef4444'">
+              <i class="bi bi-graph-up-arrow"></i>
+            </div>
+            <div class="admin-metric-pulse" [style.background]="(promedioGlobal >= 14 ? '#059669' : promedioGlobal >= 11 ? '#f59e0b' : '#ef4444') + '30'"></div>
+          </div>
+          <div class="admin-metric-body">
+            <div class="admin-metric-label">Promedio general</div>
+            <div class="admin-metric-value" [style.color]="promedioGlobal >= 14 ? '#059669' : promedioGlobal >= 11 ? '#f59e0b' : '#ef4444'">{{ promedioGlobal | number:'1.1-1' }}</div>
+          </div>
+        </div>
+      </div>
+    </div>
 
-        @if (getNotas(m.idMatricula).length === 0) {
-          <p class="text-secondary mb-0 small">Aún no hay notas registradas.</p>
-        } @else {
-          <div class="table-responsive">
-            <table class="table ie-table mb-0">
-              <thead>
-                <tr>
-                  <th>Evaluación</th>
-                  <th class="text-center">Nota</th>
-                  <th class="text-center">Observación</th>
-                </tr>
-              </thead>
-              <tbody>
-                @for (n of getNotas(m.idMatricula); track n.idNota) {
-                  <tr>
-                    <td>{{ n.evaluacionPeriodo?.nombre || '—' }}</td>
-                    <td class="text-center fw-semibold">{{ n.valor }}</td>
-                    <td class="text-secondary small">{{ n.observacion || '—' }}</td>
-                  </tr>
-                }
-              </tbody>
-            </table>
+    <!-- ═══ FILTRO DE BÚSQUEDA ═══ -->
+    <div class="users-filters-card mb-3">
+      <div class="row g-2 align-items-center">
+        <div class="col-md-6">
+          <div class="search-wrapper">
+            <i class="bi bi-search search-icon"></i>
+            <input type="text" class="form-control search-input" placeholder="Buscar por nombre del curso..."
+              [(ngModel)]="search" (input)="applyFilter()" />
+            @if (search) {
+              <button class="search-clear" (click)="search = ''; applyFilter()" title="Limpiar">
+                <i class="bi bi-x-lg"></i>
+              </button>
+            }
           </div>
-          <div class="mt-2 text-end fw-bold small">
-            Promedio: {{ promedio(m.idMatricula) | number:'1.1-1' }}
-          </div>
+        </div>
+      </div>
+      @if (search) {
+        <div class="d-flex align-items-center gap-2 mt-2 pt-2 border-top"
+          style="border-color:var(--ie-line-light) !important;">
+          <span class="small text-ink-soft">Filtrado por:</span>
+          <span class="users-active-filter">
+            <i class="bi bi-search me-1"></i>"{{ search }}"
+            <button class="btn-close-sm" (click)="search = ''; applyFilter()" title="Quitar filtro"></button>
+          </span>
+          <button class="btn btn-sm btn-soft ms-auto px-2 py-0" style="font-size:0.75rem;"
+            (click)="search = ''; applyFilter()">
+            <i class="bi bi-arrow-counterclockwise me-1"></i>Limpiar todo
+          </button>
+        </div>
+      }
+    </div>
+
+    @if (filteredCursos.length === 0) {
+      <div class="users-empty" style="background:var(--ie-card-bg);border:1px solid var(--ie-line);border-radius:var(--ie-radius-xl);padding:3rem 1.5rem;">
+        <div class="users-empty-icon">
+          <i class="bi bi-search"></i>
+        </div>
+        <h4 class="font-display fw-bold h6 mb-1">Sin resultados</h4>
+        <p class="small text-ink-soft mb-0">No hay cursos que coincidan con "{{ search }}".</p>
+      </div>
+    } @else {
+      <div class="d-flex align-items-center gap-2 mb-3">
+        <span class="small text-ink-soft">
+          <i class="bi bi-list-columns me-1"></i>{{ filteredCursos.length }} curso{{ filteredCursos.length !== 1 ? 's' : '' }}
+        </span>
+        @if (filteredCursos.length !== cursos.length) {
+          <span class="text-ink-muted small">(de {{ cursos.length }})</span>
         }
       </div>
+
+      <!-- ═══ Notas por Curso ═══ -->
+      <div class="ee-notas-list">
+      @for (curso of filteredCursos; track curso.id; let i = $index) {
+        @let notas = getNotas(curso.id);
+        @let prom = promedio(curso.id);
+        <div class="ee-notas-card" [id]="'notas-curso-' + curso.id" [style.--nota-delay]="i * 0.08 + 's'">
+          <div class="ee-notas-card-header" [style.border-left-color]="curso.accent">
+            <div class="ee-notas-card-top">
+              <div class="ee-notas-icon" [style.background]="curso.accent + '18'" [style.color]="curso.accent">
+                <i class="bi {{ curso.icono }}"></i>
+              </div>
+              <div class="ee-notas-info">
+                <h3 class="ee-notas-title" [style.color]="curso.accent">{{ curso.nombre }}</h3>
+                <div class="ee-notas-meta">
+                  <span class="ee-curso-tag" [style.background]="curso.accent + '10'" [style.color]="curso.accent">
+                    <i class="bi bi-layers"></i>
+                    {{ curso.label }}
+                  </span>
+                  <span class="ee-curso-tag" style="background:var(--ie-bg-alt);color:var(--ie-ink-soft);">
+                    <i class="bi bi-person"></i>
+                    {{ curso.docente?.split(' ')[0] || '—' }}
+                  </span>
+                </div>
+              </div>
+              <div class="ee-notas-promedio" [style.background]="getNotaBg(prom)" [style.color]="getNotaColor(prom)">
+                <span class="ee-notas-promedio-val">{{ prom | number:'1.1-1' }}</span>
+                <span class="ee-notas-promedio-lbl">{{ getNotaLabel(prom) }}</span>
+              </div>
+            </div>
+          </div>
+          <div class="ee-notas-card-body">
+            @if (notas.length === 0) {
+              <div class="ee-notas-empty">
+                <i class="bi bi-inbox"></i>
+                <span>Aún no hay notas registradas</span>
+              </div>
+            } @else {
+              <div class="ee-notas-table">
+                @for (n of notas; track n.idNota; let j = $index) {
+                  @let valor = +n.valor;
+                  <div class="ee-nota-row" [style.--row-delay]="j * 0.04 + 's'">
+                    <div class="ee-nota-info">
+                      <span class="ee-nota-eval">{{ n.evaluacionPeriodo?.nombre || '—' }}</span>
+                      @if (n.observacion) {
+                        <span class="ee-nota-obs">{{ n.observacion }}</span>
+                      }
+                    </div>
+                    <div class="ee-nota-valor" [style.background]="getNotaBg(valor)" [style.color]="getNotaColor(valor)">
+                      <span class="ee-nota-valor-num">{{ valor | number:'1.0-0' }}</span>
+                      <span class="ee-nota-valor-max">/20</span>
+                    </div>
+                  </div>
+                }
+              </div>
+              <div class="ee-notas-footer">
+                <span class="ee-notas-footer-label">
+                  <i class="bi bi-calculator"></i>
+                  Promedio del curso
+                </span>
+                <span class="ee-notas-footer-val" [style.color]="getNotaColor(prom)">{{ prom | number:'1.1-1' }}</span>
+              </div>
+            }
+          </div>
+        </div>
+      }
+    </div>
     }
   }
 </div>

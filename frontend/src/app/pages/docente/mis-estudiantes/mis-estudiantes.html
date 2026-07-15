@@ -1,58 +1,146 @@
-<div>
-  <div class="mb-4">
-    <h1 class="font-display fw-bold h3 mb-1">Mis estudiantes</h1>
-    <p class="text-secondary mb-0">Alumnos matriculados en los cursos que tienes a tu cargo.</p>
-  </div>
+<div class="dd-estudiantes">
 
-  <div class="ie-card p-3 mb-3">
-    <div class="row g-2 align-items-end">
-      <div class="col-md-4">
-        <input type="text" class="form-control" placeholder="Buscar por nombre, apellido o código..." [(ngModel)]="search" (input)="applyFilter()" />
+  @if (loading) {
+    <div class="dd-mc-loading">
+      <div class="dd-loading-spinner"></div>
+      <span>Cargando estudiantes...</span>
+    </div>
+  } @else {
+    <!-- ══════════════════════════════════════════════════════════
+         HERO — Resumen de estudiantes a cargo
+         ══════════════════════════════════════════════════════════ -->
+    <div class="dd-est-hero mb-4">
+      <div class="dd-est-hero-bg">
+        <div class="dd-est-orbe dd-est-orbe-1"></div>
+        <div class="dd-est-orbe dd-est-orbe-2"></div>
+        <div class="dd-est-orbe dd-est-orbe-3"></div>
       </div>
-      <div class="col-md-3">
-        <select class="form-select" [(ngModel)]="cursoFilter" (change)="applyFilter()">
-          <option value="TODOS">Todos los cursos</option>
+      <div class="dd-est-hero-content">
+        <div class="d-flex align-items-center gap-3">
+          <div class="dd-est-hero-icon">
+            <i class="bi bi-people-fill"></i>
+          </div>
+          <div class="flex-grow-1">
+            <h1 class="dd-est-hero-title mb-0">Mis estudiantes</h1>
+            <p class="dd-est-hero-sub mb-0">Alumnos matriculados en los cursos que tienes a tu cargo</p>
+          </div>
+        </div>
+        @if (!loading) {
+        <div class="dd-est-hero-stats">
+          <div class="dd-est-hero-stat">
+            <span class="dd-est-hero-stat-val">{{ totalEstudiantes }}</span>
+            <span class="dd-est-hero-stat-lbl">estudiantes</span>
+          </div>
+          <div class="dd-est-hero-stat-divider"></div>
+          <div class="dd-est-hero-stat">
+            <span class="dd-est-hero-stat-val">{{ cursos.length }}</span>
+            <span class="dd-est-hero-stat-lbl">cursos</span>
+          </div>
+          <div class="dd-est-hero-stat-divider"></div>
+          <div class="dd-est-hero-stat">
+            <span class="dd-est-hero-stat-val">{{ promPorCurso }}</span>
+            <span class="dd-est-hero-stat-lbl">prom./curso</span>
+          </div>
+        </div>
+        }
+      </div>
+    </div>
+
+    <!-- ══════════════════════════════════════════════════════════
+         FILTROS — Búsqueda, curso y ordenamiento
+         ══════════════════════════════════════════════════════════ -->
+    <div class="dd-est-filters mb-4">
+      <div class="dd-est-search">
+        <i class="bi bi-search dd-est-search-icon"></i>
+        <input type="text" class="dd-est-search-input"
+          placeholder="Buscar por nombre, apellido o código..."
+          [(ngModel)]="search" (input)="applyFilter()">
+        @if (search) {
+          <button class="dd-est-search-clear" (click)="search=''; applyFilter()">
+            <i class="bi bi-x-lg"></i>
+          </button>
+        }
+      </div>
+
+      <div class="dd-est-filter-group">
+        <select class="dd-est-select" [(ngModel)]="cursoFilter" (change)="applyFilter()">
+          <option value="TODOS">📚 Todos los cursos</option>
           @for (c of cursos; track c.idCurso) {
             <option [value]="c.idCurso">{{ c.asignatura?.nombre }} · {{ c.grado?.nombre }}{{ c.seccion?.nombre }}</option>
           }
         </select>
-      </div>
-      <div class="col-md-4">
-        <div class="input-group">
-          <select class="form-select" [(ngModel)]="sortField" (change)="applyFilter()">
-            <option value="apellidos">Apellidos / Nombre</option>
+
+        <div class="dd-est-sort-group">
+          <select class="dd-est-select dd-est-sort-select" [(ngModel)]="sortField" (change)="applyFilter()">
+            <option value="apellidos">Apellidos</option>
             <option value="curso">Curso</option>
           </select>
-          <button class="btn btn-outline-secondary" (click)="sortDir = sortDir === 'asc' ? 'desc' : 'asc'; applyFilter()">
-            {{ sortDir === 'asc' ? 'A-Z ↑' : 'Z-A ↓' }}
+          <button class="dd-est-sort-btn" (click)="sortDir = sortDir === 'asc' ? 'desc' : 'asc'; applyFilter()"
+            title="{{ sortDir === 'asc' ? 'Ascendente' : 'Descendente' }}">
+            <i class="bi bi-sort-alpha-{{ sortDir === 'asc' ? 'down' : 'up' }}"></i>
           </button>
         </div>
       </div>
     </div>
-  </div>
 
-  @if (loading) {
-    <app-loading-state label="Cargando estudiantes..."></app-loading-state>
-  } @else if (filtered.length === 0) {
-    <div class="ie-card p-4 text-center py-5"><p class="text-secondary mb-0">No se encontraron estudiantes con esos filtros.</p></div>
-  } @else {
-    <div class="ie-card">
-      <div class="table-responsive">
-        <table class="table ie-table mb-0">
-          <thead><tr><th>Código</th><th>Nombres</th><th>Apellidos</th><th>Curso</th><th>Grado / Sección</th></tr></thead>
-          <tbody>
-            @for (f of filtered; track f.idMatricula + '-' + f.curso.idCurso) {
-              <tr>
-                <td>{{ f.estudiante?.codigoEstudiante ?? '—' }}</td>
-                <td>{{ f.estudiante?.nombres }}</td>
-                <td>{{ f.estudiante?.apellidos }}</td>
-                <td>{{ f.curso.asignatura?.nombre }}</td>
-                <td>{{ f.curso.grado?.nombre }}{{ f.curso.seccion?.nombre }}</td>
-              </tr>
-            }
-          </tbody>
-        </table>
+    <!-- ═══ Resultados ═══ -->
+    @if (filtered.length === 0) {
+      <div class="dd-mc-empty">
+        <div class="dd-mc-empty-icon"><i class="bi bi-search"></i></div>
+        <h3 class="dd-mc-empty-title">Sin resultados</h3>
+        <p class="dd-mc-empty-text">No se encontraron estudiantes con esos filtros.</p>
+        <button class="dd-est-reset-btn" (click)="search=''; cursoFilter='TODOS'; applyFilter()">
+          <i class="bi bi-arrow-counterclockwise"></i> Limpiar filtros
+        </button>
       </div>
-    </div>
+    } @else {
+      <!-- ══════════════════════════════════════════════════════════
+           LISTA / GRID DE ESTUDIANTES
+           ══════════════════════════════════════════════════════════ -->
+      <div class="dd-est-grid">
+        @for (f of filtered; track f.idMatricula + '-' + (f.curso?.idCurso || 0); let i = $index) {
+          <div class="dd-est-card" style="--card-i:{{ i }}">
+            <div class="dd-est-card-top" [style.background]="getCursoGradient(f.curso)"></div>
+            <div class="dd-est-card-body">
+              <div class="dd-est-card-header">
+                <div class="dd-est-avatar" [style.background]="getAvatarColor(f.estudiante?.nombres || '', f.estudiante?.apellidos || '')">
+                  {{ getIniciales(f.estudiante?.nombres, f.estudiante?.apellidos) }}
+                </div>
+                <div class="dd-est-card-name">
+                  <span class="dd-est-card-nombre">{{ f.estudiante?.nombres }} {{ f.estudiante?.apellidos }}</span>
+                  <span class="dd-est-card-codigo">
+                    <i class="bi bi-person-badge"></i> {{ f.estudiante?.codigoEstudiante || '—' }}
+                  </span>
+                </div>
+              </div>
+              <div class="dd-est-card-curso">
+                <i class="bi bi-journal-bookmark"></i>
+                <span>{{ f.curso?.asignatura?.nombre || '—' }}</span>
+              </div>
+              <div class="dd-est-card-meta">
+                <span class="dd-est-card-badge" [style.background]="getBadgeBg(f.curso)" [style.color]="getBadgeColor(f.curso)">
+                  {{ f.curso?.grado?.nombre }}{{ f.curso?.seccion?.nombre }}
+                </span>
+                @if (f.curso?.docente?.nombres) {
+                  <span class="dd-est-card-docente">
+                    <i class="bi bi-person-video3"></i> {{ f.curso.docente.nombres.split(' ')[0] }}
+                  </span>
+                }
+              </div>
+            </div>
+          </div>
+        }
+      </div>
+
+      <!-- ═══ Footer ═══ -->
+      <div class="dd-est-footer mt-3">
+        <span><i class="bi bi-people"></i> {{ filtered.length }} de {{ totalEstudiantes }} estudiantes</span>
+        @if (search || cursoFilter !== 'TODOS') {
+          <button class="dd-est-footer-clear" (click)="search=''; cursoFilter='TODOS'; applyFilter()">
+            <i class="bi bi-x-circle"></i> Limpiar filtros
+          </button>
+        }
+      </div>
+    }
   }
 </div>

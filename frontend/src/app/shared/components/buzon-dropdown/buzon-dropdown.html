@@ -1,9 +1,9 @@
 <div style="position:relative;display:inline-block;">
   <button class="ie-topbar-notif-btn" (click)="toggle()" title="Buzón">
     <i class="bi bi-mailbox"></i>
-    @if (total > 0) {
+    @if (noLeidos > 0) {
       <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-primary" style="font-size:0.55rem;padding:0.25em 0.5em;min-width:16px;">
-        {{ total > 9 ? '9+' : total }}
+        {{ noLeidos > 9 ? '9+' : noLeidos }}
       </span>
     }
   </button>
@@ -26,16 +26,16 @@
           </div>
         }
         @for (c of comunicados; track c.idComunicado) {
-          <div class="p-3 border-bottom buzon-item" (click)="irAComunicados()">
+          <div class="p-3 border-bottom buzon-item" (click)="onClickComunicado(c)">
             <div class="d-flex align-items-start gap-2">
-              <div style="width:6px;height:6px;border-radius:999px;margin-top:7px;flex-shrink:0;background:var(--ie-accent);"></div>
+              <div style="width:6px;height:6px;border-radius:999px;margin-top:7px;flex-shrink:0;" [style.background]="estaLeido(c.idComunicado) ? 'transparent' : 'var(--ie-accent)'"></div>
               <div class="min-w-0">
-                <div class="small fw-semibold text-dark">{{ c.titulo }}</div>
+                <div class="small" [class.fw-bold]="!estaLeido(c.idComunicado)" [class.fw-semibold]="estaLeido(c.idComunicado)" [class.text-dark]="!estaLeido(c.idComunicado)" [class.text-ink-soft]="estaLeido(c.idComunicado)">{{ c.titulo }}</div>
                 <div class="small text-ink-soft" style="font-size:0.78rem;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">{{ c.contenido }}</div>
                 <div class="d-flex align-items-center gap-2 mt-1">
                   <span class="badge" style="font-size:0.55rem;background:var(--ie-bg-soft);color:var(--ie-ink-muted);">
-                    <i class="bi {{ c.dirigidoA === 'TODOS' ? 'bi-globe2' : c.dirigidoA === 'DOCENTE' ? 'bi-person-video3' : c.dirigidoA === 'ESTUDIANTE' ? 'bi-mortarboard' : 'bi-person-badge' }} me-1"></i>
-                    {{ c.dirigidoA === 'TODOS' ? 'Todos' : c.dirigidoA.charAt(0) + c.dirigidoA.slice(1).toLowerCase() }}
+                    <i class="bi {{ c.dirigidoA === 'TODOS' ? 'bi-globe2' : c.dirigidoA === 'DOCENTE' ? 'bi-person-video3' : c.dirigidoA === 'ESTUDIANTE' ? 'bi-mortarboard' : c.dirigidoA === 'CURSO' ? 'bi-book' : 'bi-person-badge' }} me-1"></i>
+                    {{ c.dirigidoA === 'CURSO' && c.curso?.asignatura?.nombre ? (c.curso.asignatura.nombre + (c.curso.grado?.nombre || '') + (c.curso.seccion?.nombre || '')) : c.dirigidoA === 'TODOS' ? 'Todos' : c.dirigidoA.charAt(0) + c.dirigidoA.slice(1).toLowerCase() }}
                   </span>
                   @if (c.fechaPublicacion) {
                     <span class="small text-ink-soft" style="font-size:0.65rem;">

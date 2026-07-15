@@ -43,6 +43,7 @@ export class AdminLayout {
     },
   ];
   sidebarOpen = false;
+  sidebarCollapsed = false;
   fotoErrored = false;
   profileOpen = false;
 

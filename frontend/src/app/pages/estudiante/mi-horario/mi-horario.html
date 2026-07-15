@@ -1,42 +1,176 @@
-<div>
-  <div class="mb-4">
-    <h1 class="font-display fw-bold h3 mb-1">Mi horario</h1>
-    <p class="text-secondary mb-0">Horario semanal de tus cursos matriculados.</p>
+<div class="ee-dashboard">
+
+  <!-- ═══ Hero ═══ -->
+  <div class="ee-hero mb-4">
+    <div class="ee-hero-bg">
+      <div class="ee-hero-orbe ee-hero-orbe-1"></div>
+      <div class="ee-hero-orbe ee-hero-orbe-2"></div>
+      <div class="ee-hero-orbe ee-hero-orbe-3"></div>
+    </div>
+    <div class="ee-hero-content">
+      <div class="ee-hero-main">
+        <div class="ee-hero-avatar-wrap">
+          <div class="ee-hero-avatar" style="background:linear-gradient(135deg,#0891b2,#22d3ee);">
+            <i class="bi bi-calendar-week-fill"></i>
+          </div>
+          <div class="ee-hero-avatar-ring"></div>
+        </div>
+        <div class="ee-hero-info">
+          <h1 class="ee-hero-title mb-0">Mi horario</h1>
+          <p class="ee-hero-sub mb-0">
+            <i class="bi bi-mortarboard me-1"></i>Horario semanal de tus cursos matriculados
+          </p>
+        </div>
+      </div>
+      @if (!loading) {
+        <div class="ee-hero-stats">
+          <div class="ee-hero-stat">
+            <span class="ee-hero-stat-val">{{ totalHorarios }}</span>
+            <span class="ee-hero-stat-lbl">clases/sem</span>
+          </div>
+          <div class="ee-hero-stat-divider"></div>
+          <div class="ee-hero-stat">
+            <span class="ee-hero-stat-val">{{ horasSemana }}h</span>
+            <span class="ee-hero-stat-lbl">lectivas</span>
+          </div>
+        </div>
+      }
+    </div>
   </div>
 
   @if (loading) {
-    <app-loading-state label="Cargando horario..."></app-loading-state>
+    <div class="ee-loading">
+      <div class="ee-loading-spinner"></div>
+      <span>Cargando tu horario...</span>
+    </div>
   } @else if (horarios.length === 0) {
-    <div class="ie-card p-4 text-center py-5"><p class="text-secondary mb-0">No tienes horarios asignados.</p></div>
-  } @else {
-    <div class="ie-card">
-      <div class="table-responsive">
-        <table class="table ie-table mb-0">
-          <thead>
-            <tr>
-              @for (d of diaColumns; track d) {
-                <th class="text-center">{{ dias[d] }}</th>
-              }
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              @for (d of diaColumns; track d) {
-                <td class="align-top" style="min-width:140px;height:120px;">
-                  @for (h of getHorarioForDay(d); track h.idHorario) {
-                    <div class="border rounded p-2 mb-2 small" style="background:var(--ie-bg-card);">
-                      <div class="fw-semibold">{{ h.curso?.asignatura?.nombre || '—' }}</div>
-                      <div>{{ h.horaInicio }}–{{ h.horaFin }}</div>
-                      @if (h.aula) { <div class="text-secondary">Aula {{ h.aula }}</div> }
-                      <div class="text-secondary">{{ h.curso?.docente?.nombres }} {{ h.curso?.docente?.apellidos }}</div>
-                    </div>
-                  }
-                </td>
-              }
-            </tr>
-          </tbody>
-        </table>
+    <div class="dd-com-feed-empty">
+      <div class="dd-com-feed-empty-icon">
+        <i class="bi bi-calendar-x"></i>
       </div>
+      <h4 class="dd-com-feed-empty-title">Sin horarios</h4>
+      <p class="dd-com-feed-empty-text">No tienes horarios asignados actualmente.</p>
+    </div>
+  } @else {
+    <!-- ═══ Stats Cards ═══ -->
+    <div class="admin-metrics-grid mb-4">
+      <div class="admin-metric-link" style="--metric-delay:0s">
+        <div class="admin-metric-card">
+          <div class="admin-metric-top" style="background:rgba(5,150,105,0.1);">
+            <div class="admin-metric-icon" style="background:rgba(5,150,105,0.2);color:#059669;">
+              <i class="bi bi-bookmark-check-fill"></i>
+            </div>
+            <div class="admin-metric-pulse" style="background:rgba(5,150,105,0.2);"></div>
+          </div>
+          <div class="admin-metric-body">
+            <div class="admin-metric-label">Cursos</div>
+            <div class="admin-metric-value">{{ totalCursos }}</div>
+          </div>
+        </div>
+      </div>
+      <div class="admin-metric-link" style="--metric-delay:0.06s">
+        <div class="admin-metric-card">
+          <div class="admin-metric-top" style="background:rgba(2,132,199,0.1);">
+            <div class="admin-metric-icon" style="background:rgba(2,132,199,0.2);color:#0284c7;">
+              <i class="bi bi-layers-fill"></i>
+            </div>
+            <div class="admin-metric-pulse" style="background:rgba(2,132,199,0.2);"></div>
+          </div>
+          <div class="admin-metric-body">
+            <div class="admin-metric-label">Horarios</div>
+            <div class="admin-metric-value">{{ totalHorarios }}</div>
+          </div>
+        </div>
+      </div>
+      <div class="admin-metric-link" style="--metric-delay:0.12s">
+        <div class="admin-metric-card">
+          <div class="admin-metric-top" style="background:rgba(124,58,237,0.1);">
+            <div class="admin-metric-icon" style="background:rgba(124,58,237,0.2);color:#7c3aed;">
+              <i class="bi bi-calendar-event-fill"></i>
+            </div>
+            <div class="admin-metric-pulse" style="background:rgba(124,58,237,0.2);"></div>
+          </div>
+          <div class="admin-metric-body">
+            <div class="admin-metric-label">Días activos</div>
+            <div class="admin-metric-value">{{ diasActivos }}</div>
+          </div>
+        </div>
+      </div>
+      <div class="admin-metric-link" style="--metric-delay:0.18s">
+        <div class="admin-metric-card">
+          <div class="admin-metric-top" style="background:rgba(245,158,11,0.1);">
+            <div class="admin-metric-icon" style="background:rgba(245,158,11,0.2);color:#f59e0b;">
+              <i class="bi bi-clock-fill"></i>
+            </div>
+            <div class="admin-metric-pulse" style="background:rgba(245,158,11,0.2);"></div>
+          </div>
+          <div class="admin-metric-body">
+            <div class="admin-metric-label">Horas/semana</div>
+            <div class="admin-metric-value">{{ horasSemana }}h</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ Horario por Día ═══ -->
+    <div class="ee-horario-grid">
+      @for (d of diaColumns; track d) {
+        @let horariosDia = getHorarioForDay(d);
+        <div class="ee-horario-day-col" [style.--day-delay]="(d - 1) * 0.08 + 's'">
+          <div class="ee-horario-day-header">
+            <span class="ee-horario-day-name">{{ dias[d] }}</span>
+            @if (horariosDia.length > 0) {
+              <span class="ee-horario-day-count">{{ horariosDia.length }} clases</span>
+            }
+          </div>
+          <div class="ee-horario-day-body">
+            @if (horariosDia.length === 0) {
+              <div class="ee-horario-empty-day">
+                <i class="bi bi-emoji-neutral"></i>
+                <span>Sin clases</span>
+              </div>
+            } @else {
+              @for (h of horariosDia; track h.idHorario; let j = $index) {
+                <div class="ee-horario-card" [style.--h-card-delay]="j * 0.06 + 's'"
+                  [style.border-left-color]="h.accent || '#0891b2'">
+                  <div class="ee-horario-card-top">
+                    <div class="ee-horario-icon" [style.background]="(h.accent || '#0891b2') + '18'" [style.color]="h.accent || '#0891b2'">
+                      <i class="bi {{ h.icono || 'bi-calendar3' }}"></i>
+                    </div>
+                    <div class="ee-horario-info">
+                      <h4 class="ee-horario-curso-nombre" [style.color]="h.accent || '#0891b2'">
+                        {{ h.curso?.asignatura?.nombre || '—' }}
+                      </h4>
+                      <div class="ee-horario-meta">
+                        <span class="ee-horario-tag" [style.background]="(h.accent || '#0891b2') + '10'" [style.color]="h.accent || '#0891b2'">
+                          <i class="bi bi-layers"></i>
+                          {{ h.curso?.grado?.nombre }}{{ h.curso?.seccion?.nombre }}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="ee-horario-card-body">
+                    <div class="ee-horario-time">
+                      <i class="bi bi-clock"></i>
+                      <span>{{ h.horaInicio }} – {{ h.horaFin }}</span>
+                    </div>
+                    @if (h.aula) {
+                      <div class="ee-horario-aula">
+                        <i class="bi bi-door-open"></i>
+                        <span>Aula {{ h.aula }}</span>
+                      </div>
+                    }
+                  </div>
+                  <div class="ee-horario-card-footer">
+                    <i class="bi bi-person"></i>
+                    <span>{{ h.curso?.docente?.nombres }} {{ h.curso?.docente?.apellidos }}</span>
+                  </div>
+                </div>
+              }
+            }
+          </div>
+        </div>
+      }
     </div>
   }
 </div>

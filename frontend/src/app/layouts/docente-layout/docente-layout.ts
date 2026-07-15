@@ -10,7 +10,7 @@ export class DocenteLayout {
   sections = [
     {
       title: 'General',
-      items: [{ label: 'Panel principal', route: '/docente', icon: 'bi bi-speedometer2', end: true }],
+      items: [{ label: 'Inicio', route: '/docente', icon: 'bi bi-speedometer2', end: true }],
     },
     {
       title: 'Mi trabajo',
@@ -30,5 +30,6 @@ export class DocenteLayout {
     },
   ];
   sidebarOpen = false;
-  constructor(public auth: AuthService) {}
+  sidebarCollapsed = false;
+  constructor(public auth: AuthService) { }
 }

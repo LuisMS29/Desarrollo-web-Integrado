@@ -10,57 +10,64 @@ import { AuthService } from '../../../core/services/auth.service';
 export class EstudianteDashboard implements OnInit {
   estudiante: any = null;
   matriculas: any[] = [];
+  comunicados: any[] = [];
+  comunicadosRecientes: any[] = [];
   loading = true;
   greeting = 'Bienvenido';
   greetingIcon = 'bi-hand-wave';
+  greetingQuote = 'Cada día es una nueva oportunidad para aprender algo nuevo.';
 
   auth = inject(AuthService);
 
-  quickActions = [
+  statConfig = [
     {
-      route: '/estudiante/cursos',
-      icon: 'bi-journal-bookmark-fill',
-      title: 'Mis cursos',
-      desc: 'Revisa tus cursos, docentes y horarios',
-      gradient: 'linear-gradient(135deg, #059669, #34d399)',
+      key: 'cursos', label: 'Cursos matriculados', accent: '#059669', icon: 'bi-bookmark-check-fill',
+      link: '/estudiante/cursos', getValue: () => this.activas.length,
     },
     {
-      route: '/estudiante/notas',
-      icon: 'bi-clipboard-data-fill',
-      title: 'Mis notas',
-      desc: 'Consulta tus calificaciones por bimestre',
-      gradient: 'linear-gradient(135deg, #0284c7, #38bdf8)',
+      key: 'evaluaciones', label: 'Evaluaciones', accent: '#0284c7', icon: 'bi-clipboard-data-fill',
+      link: '/estudiante/notas', getValue: () => this.activas.length * 4,
     },
     {
-      route: '/estudiante/asistencia',
-      icon: 'bi-calendar-check-fill',
-      title: 'Mi asistencia',
-      desc: 'Verifica tu porcentaje de asistencia',
-      gradient: 'linear-gradient(135deg, #7c3aed, #a855f7)',
+      key: 'asistencia', label: 'Horas semanales', accent: '#7c3aed', icon: 'bi-calendar-check-fill',
+      link: '/estudiante/asistencia', getValue: () => this.activas.length * 4,
     },
     {
-      route: '/estudiante/comunicados',
-      icon: 'bi-megaphone-fill',
-      title: 'Comunicados',
-      desc: 'Avisos del colegio dirigidos a estudiantes',
-      gradient: 'linear-gradient(135deg, #f59e0b, #fbbf24)',
+      key: 'comunicados', label: 'Comunicados', accent: '#f59e0b', icon: 'bi-megaphone-fill',
+      link: '/estudiante/comunicados', getValue: () => this.comunicados.length,
     },
   ];
+
+
 
   constructor(private api: ApiService, private cdr: ChangeDetectorRef) {}
 
   ngOnInit(): void {
     const h = new Date().getHours();
-    if (h < 12) { this.greeting = 'Buenos días'; this.greetingIcon = 'bi-sunrise'; }
-    else if (h < 18) { this.greeting = 'Buenas tardes'; this.greetingIcon = 'bi-sun'; }
-    else { this.greeting = 'Buenas noches'; this.greetingIcon = 'bi-moon-stars'; }
+    if (h < 12) {
+      this.greeting = 'Buenos días';
+      this.greetingIcon = 'bi-sunrise';
+      this.greetingQuote = 'Que tengas un brillante día de clases. ✨';
+    } else if (h < 18) {
+      this.greeting = 'Buenas tardes';
+      this.greetingIcon = 'bi-sun';
+      this.greetingQuote = 'Sigue adelante, ya casi terminas la jornada. 💪';
+    } else {
+      this.greeting = 'Buenas noches';
+      this.greetingIcon = 'bi-moon-stars';
+      this.greetingQuote = 'Descansa y recarga energías para mañana. 🌙';
+    }
 
     this.api.estudiantePanel.obtenerMiFicha().subscribe({
       next: (data: any) => {
         this.estudiante = data;
         if (data?.idEstudiante) {
           this.api.estudiantePanel.listarMisMatriculas(data.idEstudiante).subscribe({
-            next: (mat: any) => { this.matriculas = mat; this.loading = false; this.cdr.detectChanges(); },
+            next: (mat: any) => {
+              this.matriculas = mat || [];
+              this.loading = false;
+              this.cdr.detectChanges();
+            },
             error: () => { this.loading = false; this.cdr.detectChanges(); }
           });
         } else {
@@ -69,6 +76,24 @@ export class EstudianteDashboard implements OnInit {
         }
       },
       error: () => { this.loading = false; this.cdr.detectChanges(); }
+    });
+
+    // Cargar comunicados recientes
+    this.api.comunicados.listar().subscribe({
+      next: (data: any) => {
+        const hoy = new Date().toISOString().slice(0, 10);
+        const filtrados = (data || [])
+          .filter((c: any) => {
+            if (c.dirigidoA === 'TODOS' || c.dirigidoA === 'ESTUDIANTE') return true;
+            return false;
+          })
+          .filter((c: any) => !c.fechaExpiracion || c.fechaExpiracion >= hoy)
+          .sort((a: any, b: any) => new Date(b.fechaPublicacion).getTime() - new Date(a.fechaPublicacion).getTime());
+        this.comunicados = filtrados;
+        this.comunicadosRecientes = filtrados.slice(0, 3);
+        this.cdr.detectChanges();
+      },
+      error: () => {}
     });
   }
 
@@ -85,7 +110,34 @@ export class EstudianteDashboard implements OnInit {
     return Object.entries(agrupadas).map(([grado, count]) => ({ grado, count: count as number }));
   }
 
+  private cursoIcons = ['bi-book', 'bi-calculator', 'bi-globe2', 'bi-flask', 'bi-pencil-square', 'bi-music-note-beamed', 'bi-palette', 'bi-activity'];
+
+  get cursosList(): any[] {
+    return this.activas.map((m: any, idx: number) => ({
+      id: m.idMatricula,
+      nombre: m.curso?.asignatura?.nombre || '—',
+      grado: m.curso?.grado?.nombre || '',
+      seccion: m.curso?.seccion?.nombre || '',
+      docente: m.curso?.docente?.nombres + ' ' + m.curso?.docente?.apellidos || '—',
+      horario: m.curso?.horarios?.[0] || null,
+      icono: this.cursoIcons[idx % this.cursoIcons.length],
+    }));
+  }
+
   maxGrado(): number {
     return Math.max(1, ...this.grados.map(g => g.count));
+  }
+
+  formatDate(dateStr: string): string {
+    if (!dateStr) return '—';
+    const parts = dateStr.split('T')[0].split(' ')[0].split('-');
+    if (parts.length !== 3) return dateStr;
+    const months = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+    return `${parts[2]} ${months[parseInt(parts[1])-1] || parts[1]} ${parts[0]}`;
+  }
+
+  getInitials(): string {
+    const name = this.estudiante?.nombres || this.auth.user()?.username || 'E';
+    return name.charAt(0).toUpperCase();
   }
 }

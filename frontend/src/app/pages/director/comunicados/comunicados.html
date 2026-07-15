@@ -7,5 +7,6 @@
   [headerIcon]="'bi-megaphone'" [accentColor]="'#7a4e9e'" [entityLabel]="'comunicado'"
   [rowCountLabel]="'Comunicados publicados'"
   [colorGradient]="'linear-gradient(135deg, #7a4e9e, #a78bfa)'" [showRowNumber]="true"
-  [viewMode]="'cards'" [cardConfig]="cardConfig">
+  [viewMode]="'cards'" [cardConfig]="cardConfig"
+  [deleteFn]="deleteComunicado.bind(this)">
 </app-entity-crud-page>

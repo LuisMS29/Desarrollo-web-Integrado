@@ -1,23 +1,96 @@
-<div>
-  <div class="mb-4">
-    <h1 class="font-display fw-bold h3 mb-1">Mis cursos</h1>
-    <p class="text-secondary mb-0">Cursos en los que estás matriculado.</p>
+<div class="ee-dashboard">
+
+  <!-- ═══ Hero ═══ -->
+  <div class="ee-hero mb-4">
+    <div class="ee-hero-bg">
+      <div class="ee-hero-orbe ee-hero-orbe-1"></div>
+      <div class="ee-hero-orbe ee-hero-orbe-2"></div>
+      <div class="ee-hero-orbe ee-hero-orbe-3"></div>
+    </div>
+    <div class="ee-hero-content">
+      <div class="ee-hero-main">
+        <div class="ee-hero-avatar-wrap">
+          <div class="ee-hero-avatar" style="background:linear-gradient(135deg,#059669,#34d399);">
+            <i class="bi bi-journal-bookmark-fill"></i>
+          </div>
+          <div class="ee-hero-avatar-ring"></div>
+        </div>
+        <div class="ee-hero-info">
+          <h1 class="ee-hero-title mb-0">Mis cursos</h1>
+          <p class="ee-hero-sub mb-0">
+            <i class="bi bi-mortarboard me-1"></i>Cursos en los que estás matriculado
+          </p>
+        </div>
+      </div>
+      @if (!loading) {
+        <div class="ee-hero-stats">
+          <div class="ee-hero-stat">
+            <span class="ee-hero-stat-val">{{ cursos.length }}</span>
+            <span class="ee-hero-stat-lbl">cursos</span>
+          </div>
+          <div class="ee-hero-stat-divider"></div>
+          <div class="ee-hero-stat">
+            <span class="ee-hero-stat-val">{{ distinctGrados }}</span>
+            <span class="ee-hero-stat-lbl">grados</span>
+          </div>
+        </div>
+      }
+    </div>
   </div>
 
   @if (loading) {
-    <app-loading-state label="Cargando tus cursos..."></app-loading-state>
-  } @else if (matriculas.length === 0) {
-    <div class="ie-card p-4 text-center py-5"><p class="text-secondary mb-0">No estás matriculado en ningún curso.</p></div>
+    <div class="ee-loading">
+      <div class="ee-loading-spinner"></div>
+      <span>Cargando tus cursos...</span>
+    </div>
+  } @else if (cursos.length === 0) {
+    <div class="dd-com-feed-empty">
+      <div class="dd-com-feed-empty-icon">
+        <i class="bi bi-journal-x"></i>
+      </div>
+      <h4 class="dd-com-feed-empty-title">Sin cursos</h4>
+      <p class="dd-com-feed-empty-text">No estás matriculado en ningún curso actualmente.</p>
+    </div>
   } @else {
-    <div class="row g-3">
-      @for (m of matriculas; track m.idMatricula) {
-        <div class="col-md-6 col-xl-4">
-          <div class="ie-card p-3 h-100">
-            <div class="mb-2">
-              <span class="badge-rol ESTUDIANTE mb-2 d-inline-block">{{ m.curso?.grado?.nombre ?? '—' }}{{ m.curso?.seccion?.nombre ?? '' }}</span>
-              <h3 class="font-display h6 fw-bold mb-0">{{ m.curso?.asignatura?.nombre ?? '—' }}</h3>
-              <div class="small text-secondary">
-                Docente: {{ m.curso?.docente ? (m.curso.docente.nombres + ' ' + m.curso.docente.apellidos) : '—' }}
+    <!-- ═══ Metric Cards Grid (estilo admin) ═══ -->
+    <div class="admin-metrics-grid grid-3cols mb-4">
+      @for (curso of cursos; track curso.id; let i = $index) {
+        <div class="admin-metric-link" [style.--metric-delay]="i * 0.06 + 's'">
+          <div class="admin-metric-card">
+            <div class="admin-metric-top" [style.background]="curso.accent + '14'">
+              <div class="admin-metric-icon" [style.background]="curso.accent + '22'" [style.color]="curso.accent">
+                <i class="bi {{ curso.icono }}"></i>
+              </div>
+              <div class="admin-metric-pulse" [style.background]="curso.accent + '30'"></div>
+            </div>
+            <div class="admin-metric-body">
+              <div class="admin-metric-label">{{ curso.nombre }}</div>
+              <div class="d-flex align-items-center gap-2 mt-1 flex-wrap">
+                <span class="admin-metric-tag" [style.background]="curso.accent + '12'" [style.color]="curso.accent">
+                  <i class="bi bi-layers"></i>
+                  {{ curso.label }}
+                </span>
+                @if (curso.horarios?.length > 0) {
+                  <span class="admin-metric-tag" style="background:var(--ie-bg-alt);color:var(--ie-ink-soft);">
+                    <i class="bi bi-clock"></i>
+                    {{ curso.horarios.length }} sesión{{ curso.horarios.length !== 1 ? 'es' : '' }}
+                  </span>
+                }
+              </div>
+              <div class="admin-metric-value" style="font-size:0.82rem;font-weight:600;color:var(--ie-ink-soft);margin-top:0.35rem;">
+                <i class="bi bi-person-video3 me-1"></i>{{ curso.docente }}
+              </div>
+            </div>
+            <div class="admin-metric-footer">
+              <div class="mis-cursos-actions">
+                <a [routerLink]="['/estudiante/notas']" [queryParams]="{matriculaId: curso.id}" class="mis-curso-btn" [style.background]="curso.accent + '12'" [style.color]="curso.accent" [style.border-color]="curso.accent + '25'">
+                  <i class="bi bi-clipboard-data"></i>
+                  Ver notas
+                </a>
+                <a [routerLink]="['/estudiante/asistencia']" [queryParams]="{matriculaId: curso.id}" class="mis-curso-btn" style="background:var(--ie-bg-alt);color:var(--ie-ink-soft);border-color:var(--ie-line);">
+                  <i class="bi bi-calendar-check"></i>
+                  Asistencia
+                </a>
               </div>
             </div>
           </div>

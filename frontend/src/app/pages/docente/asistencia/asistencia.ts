@@ -27,6 +27,13 @@ export class DocenteAsistencia implements OnInit {
   openMenuCell: string | null = null;
   estados = ESTADOS;
 
+  diasNombres = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
+  mesesNombres = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Setiembre', 'Octubre', 'Noviembre', 'Diciembre'];
+  studentColors = [
+    '#0284c7', '#10b981', '#8b5cf6', '#f59e0b',
+    '#f43f5e', '#14b8a6', '#ec4899', '#6366f1',
+  ];
+
   constructor(
     private route: ActivatedRoute,
     private api: ApiService,
@@ -42,8 +49,68 @@ export class DocenteAsistencia implements OnInit {
   }
 
   get monthLabel(): string {
-    const months = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Setiembre','Octubre','Noviembre','Diciembre'];
-    return months[this.selectedMonth] || '';
+    return this.mesesNombres[this.selectedMonth] || '';
+  }
+
+  get resumenMes(): Record<string, number> {
+    const total: Record<string, number> = { PRESENTE: 0, TARDANZA: 0, AUSENTE: 0, JUSTIFICADO: 0 };
+    for (const m of this.matriculas) {
+      for (const d of this.diasDelMes) {
+        const estado = this.getEstado(m.idMatricula, d);
+        if (estado && total.hasOwnProperty(estado)) total[estado]++;
+      }
+    }
+    return total;
+  }
+
+  getStudentColor(index: number): string {
+    return this.studentColors[index % this.studentColors.length];
+  }
+
+  getDiaColor(diaSemana: number): { bg: string; text: string } {
+    const colors = [
+      { bg: '#eff6ff', text: '#1d4ed8' },
+      { bg: '#f0fdf4', text: '#15803d' },
+      { bg: '#fefce8', text: '#a16207' },
+      { bg: '#fef2f2', text: '#b91c1c' },
+      { bg: '#faf5ff', text: '#7c3aed' },
+      { bg: '#f8fafc', text: '#475569' },
+    ];
+    return colors[Math.min(diaSemana - 1, colors.length - 1)] ?? colors[0];
+  }
+
+  esFinSemana(dia: number): boolean {
+    const d = new Date(this.selectedYear, this.selectedMonth, dia).getDay();
+    return d === 0 || d === 6;
+  }
+
+  getDiaSemanaAbrev(dia: number): string {
+    const d = new Date(this.selectedYear, this.selectedMonth, dia).getDay();
+    return this.diasNombres[d] || '';
+  }
+
+  irAHoy(): void {
+    const now = new Date();
+    this.selectedMonth = now.getMonth();
+    this.selectedYear = now.getFullYear();
+    this.generarDias();
+    const cursoId = Number(this.route.snapshot.paramMap.get('cursoId'));
+    if (cursoId) {
+      this.asistencias = {};
+      this.asistenciaIds = {};
+      this.cargarAsistenciasExistentes(cursoId);
+    }
+  }
+
+  getStudentResumen(matriculaId: number): Record<string, number> {
+    const total: Record<string, number> = { PRESENTE: 0, TARDANZA: 0, AUSENTE: 0, JUSTIFICADO: 0 };
+    for (const d of this.diasDelMes) {
+      const estado = this.getEstado(matriculaId, d);
+      if (estado && total.hasOwnProperty(estado)) {
+        total[estado]++;
+      }
+    }
+    return total;
   }
 
   loadData(cursoId: number): void {
@@ -195,16 +262,6 @@ export class DocenteAsistencia implements OnInit {
           this.toast.error(err.friendlyMessage || 'Error al guardar asistencia.');
         }
       });
-    }
-  }
-
-  getBadgeClass(estado: string): string {
-    switch (estado) {
-      case 'PRESENTE': return 'bg-success';
-      case 'TARDANZA': return 'bg-warning text-dark';
-      case 'AUSENTE': return 'bg-danger';
-      case 'JUSTIFICADO': return 'bg-info text-dark';
-      default: return 'bg-light text-muted';
     }
   }
 

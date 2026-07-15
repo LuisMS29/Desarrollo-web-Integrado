@@ -1,103 +1,239 @@
-@if (loading) { <app-loading-state label="Cargando asistencia..."></app-loading-state> }
-@else {
-  <div class="d-flex justify-content-between align-items-center mb-3">
-    <div>
-      <h1 class="font-display fw-bold h3 mb-1">Asistencia</h1>
-      @if (curso) { <p class="text-secondary mb-0">{{ curso.asignatura?.nombre }} - {{ curso.grado?.nombre }} {{ curso.seccion?.nombre }}</p> }
+<div class="dd-asistencia">
+
+  @if (loading) {
+  <div class="dd-mc-loading">
+    <div class="dd-loading-spinner"></div>
+    <span>Cargando asistencia...</span>
+  </div>
+  } @else {
+  <!-- ══════════════════════════════════════════════════════════
+         HERO — Info del curso + estadísticas del mes
+         ══════════════════════════════════════════════════════════ -->
+  <div class="dd-asistencia-hero mb-4">
+    <div class="dd-asistencia-hero-bg">
+      <div class="dd-asistencia-orbe dd-asistencia-orbe-1"></div>
+      <div class="dd-asistencia-orbe dd-asistencia-orbe-2"></div>
+      <div class="dd-asistencia-orbe dd-asistencia-orbe-3"></div>
+    </div>
+    <a [routerLink]="['/docente/cursos']" class="dd-back-btn">
+      <i class="bi bi-arrow-left"></i>
+      <span>Volver a Mis cursos</span>
+    </a>
+    <div class="dd-asistencia-hero-content">
+      <div class="d-flex align-items-center gap-3">
+        <div class="dd-asistencia-hero-icon">
+          <i class="bi bi-person-check"></i>
+        </div>
+        <div class="flex-grow-1">
+          <div class="d-flex align-items-center gap-2 flex-wrap">
+            <h1 class="dd-asistencia-hero-title mb-0">Asistencia</h1>
+            @if (curso) {
+            <span class="dd-asistencia-badge"
+              style="background:rgba(16,185,129,0.2);color:#34d399;border-color:rgba(16,185,129,0.25);">
+              {{ curso.grado?.nombre }}{{ curso.seccion?.nombre }}
+            </span>
+            }
+          </div>
+          @if (curso) {
+          <p class="dd-asistencia-hero-sub mb-0">
+            {{ curso.asignatura?.nombre }} · {{ curso.periodoAcademico?.nombre || '' }}
+          </p>
+          }
+        </div>
+      </div>
+      @if (matriculas.length > 0) {
+      <div class="dd-asistencia-hero-stats">
+        <div class="dd-asistencia-hero-stat">
+          <span class="dd-asistencia-hero-stat-val">{{ matriculas.length }}</span>
+          <span class="dd-asistencia-hero-stat-lbl">estudiantes</span>
+        </div>
+        <div class="dd-asistencia-hero-stat-divider"></div>
+        <div class="dd-asistencia-hero-stat">
+          <span class="dd-asistencia-hero-stat-val">{{ diasDelMes.length }}</span>
+          <span class="dd-asistencia-hero-stat-lbl">días clase</span>
+        </div>
+        <div class="dd-asistencia-hero-stat-divider"></div>
+        <div class="dd-asistencia-hero-stat">
+          <span class="dd-asistencia-hero-stat-val" style="color:#34d399">{{ resumenMes['PRESENTE'] || 0 }}</span>
+          <span class="dd-asistencia-hero-stat-lbl">presentes</span>
+        </div>
+        <div class="dd-asistencia-hero-stat-divider"></div>
+        <div class="dd-asistencia-hero-stat">
+          <span class="dd-asistencia-hero-stat-val" style="color:#fbbf24">{{ resumenMes['TARDANZA'] || 0 }}</span>
+          <span class="dd-asistencia-hero-stat-lbl">tardanzas</span>
+        </div>
+        <div class="dd-asistencia-hero-stat-divider"></div>
+        <div class="dd-asistencia-hero-stat">
+          <span class="dd-asistencia-hero-stat-val" style="color:#fb7185">{{ resumenMes['AUSENTE'] || 0 }}</span>
+          <span class="dd-asistencia-hero-stat-lbl">ausencias</span>
+        </div>
+      </div>
+      }
     </div>
   </div>
 
-  @if (periodo) {
-    <div class="ie-card p-3 mb-3">
-      <div class="small text-secondary">
-        Período: {{ periodo.fechaInicio | date:'dd/MM/yyyy' }} al {{ periodo.fechaFin | date:'dd/MM/yyyy' }}
-        @if (horarios.length > 0) {
-          <span class="ms-3">Días de clase:
-            @for (h of horarios; track h.idHorario) {
-              <span class="badge bg-light text-dark me-1">{{ ['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'][h.diaSemana] }} {{ h.horaInicio }}-{{ h.horaFin }}</span>
-            }
-          </span>
-        }
-      </div>
-    </div>
-  }
-
   @if (matriculas.length === 0) {
-    <div class="ie-card p-4 text-center">
-      <p class="text-secondary mb-0">No hay estudiantes matriculados activamente en este curso.</p>
-    </div>
+  <div class="dd-mc-empty">
+    <div class="dd-mc-empty-icon"><i class="bi bi-people"></i></div>
+    <h3 class="dd-mc-empty-title">Sin estudiantes</h3>
+    <p class="dd-mc-empty-text">No hay estudiantes matriculados activamente en este curso.</p>
+  </div>
   } @else {
-    <div class="ie-card p-3 mb-3">
-      <div class="d-flex justify-content-between align-items-center">
-        <button class="btn btn-outline-secondary btn-sm" (click)="cambiarMes(-1)">&laquo; Anterior</button>
-        <span class="fw-semibold">{{ monthLabel }} {{ selectedYear }}</span>
-        <button class="btn btn-outline-secondary btn-sm" (click)="cambiarMes(1)">Siguiente &raquo;</button>
+  <!-- ══════════════════════════════════════════════════════════
+           BARRA SUPERIOR — Mes + horarios + resumen
+           ══════════════════════════════════════════════════════════ -->
+  <div class="dd-asistencia-topbar mb-3">
+    <!-- Month navigation -->
+    <div class="dd-asistencia-month-nav">
+      <button class="dd-asistencia-nav-btn" (click)="cambiarMes(-1)" title="Mes anterior">
+        <i class="bi bi-chevron-left"></i>
+      </button>
+      <div class="dd-asistencia-month-display">
+        <span class="dd-asistencia-month-name">{{ monthLabel }}</span>
+        <span class="dd-asistencia-month-year">{{ selectedYear }}</span>
       </div>
+      <button class="dd-asistencia-nav-btn" (click)="cambiarMes(1)" title="Mes siguiente">
+        <i class="bi bi-chevron-right"></i>
+      </button>
+      <button class="dd-asistencia-today-btn" (click)="irAHoy()" title="Ir al mes actual">
+        <i class="bi bi-calendar-event"></i> Hoy
+      </button>
     </div>
 
-    <div class="ie-card">
-        <div class="table-responsive">
-          <table class="table ie-table mb-0">
-            <thead>
-              <tr>
-                <th style="min-width:180px;">Estudiante</th>
-                @for (d of diasDelMes; track d) {
-                  <th class="text-center" style="min-width:48px;">
-                    {{ d }}
-                    <button class="btn btn-sm p-0 text-secondary ms-1" (click)="marcarTodos(d, 'PRESENTE')" title="Marcar todos presente">&#9660;</button>
-                  </th>
+    <!-- Horarios chips -->
+    @if (horarios.length > 0) {
+    <div class="dd-asistencia-horarios">
+      <i class="bi bi-clock"></i>
+      @for (h of horarios; track h.idHorario) {
+      <span class="dd-asistencia-horario-chip" [style.background]="getDiaColor(h.diaSemana).bg"
+        [style.color]="getDiaColor(h.diaSemana).text">
+        {{ ['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'][h.diaSemana] }}
+        <span class="dd-asistencia-horario-time">{{ h.horaInicio }}-{{ h.horaFin }}</span>
+      </span>
+      }
+    </div>
+    }
+
+    <!-- Legend -->
+    <div class="dd-asistencia-legend">
+      <span class="dd-asistencia-legend-item dd-legend-presente">
+        <span class="dd-legend-dot"></span> PRESENTE
+      </span>
+      <span class="dd-asistencia-legend-item dd-legend-tardanza">
+        <span class="dd-legend-dot"></span> TARDANZA
+      </span>
+      <span class="dd-asistencia-legend-item dd-legend-ausente">
+        <span class="dd-legend-dot"></span> AUSENTE
+      </span>
+      <span class="dd-asistencia-legend-item dd-legend-justificado">
+        <span class="dd-legend-dot"></span> JUSTIFICADO
+      </span>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════════════════════
+           TABLA DE ASISTENCIA
+           ══════════════════════════════════════════════════════════ -->
+  <div class="dd-asistencia-table-wrap">
+    <table class="dd-asistencia-table">
+      <thead>
+        <tr>
+          <th class="dd-asistencia-th-student">
+            <i class="bi bi-person"></i>
+            <span>Estudiante</span>
+          </th>
+          @for (d of diasDelMes; track d; let i = $index) {
+          <th class="dd-asistencia-th-day" [class.is-weekend]="esFinSemana(d)">
+            <div class="dd-asistencia-th-day-content">
+              <span class="dd-asistencia-th-day-num">{{ d }}</span>
+              <span class="dd-asistencia-th-day-name">{{ getDiaSemanaAbrev(d) }}</span>
+              <button class="dd-asistencia-marcar-todos" (click)="marcarTodos(d, 'PRESENTE')"
+                title="Marcar todos presente">
+                <i class="bi bi-check-all"></i>
+              </button>
+            </div>
+          </th>
+          }
+        </tr>
+      </thead>
+      <tbody>
+        @for (m of matriculas; track m.idMatricula; let i = $index) {
+        <tr class="dd-asistencia-tr" [style.--tr-delay]="i * 0.025 + 's'">
+          <td class="dd-asistencia-td-student">
+            <div class="dd-asistencia-student-info">
+              <div class="dd-asistencia-student-avatar" [style.background]="getStudentColor(i)">
+                {{ (m.estudiante?.nombres || '?').charAt(0) }}{{ (m.estudiante?.apellidos || '').charAt(0) }}
+              </div>
+              <div class="dd-asistencia-student-name">
+                <span>{{ m.estudiante?.nombres }} {{ m.estudiante?.apellidos }}</span>
+                <small>{{ m.estudiante?.codigoEstudiante || '' }}</small>
+              </div>
+              <!-- Student stats for this month -->
+              <div class="dd-asistencia-student-stats">
+                @let sr = getStudentResumen(m.idMatricula);
+                @if (sr['PRESENTE'] || sr['TARDANZA'] || sr['AUSENTE'] || sr['JUSTIFICADO']) {
+                <span class="dd-student-stat dd-stat-presente" title="Presentes">{{ sr['PRESENTE'] }}</span>
+                @if (sr['TARDANZA']) { <span class="dd-student-stat dd-stat-tardanza" title="Tardanzas">{{
+                  sr['TARDANZA'] }}</span> }
+                @if (sr['AUSENTE']) { <span class="dd-student-stat dd-stat-ausente" title="Ausencias">{{ sr['AUSENTE']
+                  }}</span> }
+                @if (sr['JUSTIFICADO']) { <span class="dd-student-stat dd-stat-justificado" title="Justificados">{{
+                  sr['JUSTIFICADO'] }}</span> }
                 }
-              </tr>
-            </thead>
-            <tbody>
-              @for (m of matriculas; track m.idMatricula) {
-                <tr>
-                  <td>{{ m.estudiante?.nombres }} {{ m.estudiante?.apellidos }}</td>
-                  @for (d of diasDelMes; track d) {
-                    <td class="text-center position-relative">
-                      @if (isSaving(m.idMatricula, d)) {
-                        <span class="spinner-border spinner-border-sm text-secondary"></span>
-                      } @else {
-                        <button class="btn btn-sm p-1 border-0"
-                          style="min-width:32px;"
-                          [class.bg-success]="getEstado(m.idMatricula, d) === 'PRESENTE'"
-                          [class.bg-warning]="getEstado(m.idMatricula, d) === 'TARDANZA'"
-                          [class.bg-danger]="getEstado(m.idMatricula, d) === 'AUSENTE'"
-                          [class.bg-info]="getEstado(m.idMatricula, d) === 'JUSTIFICADO'"
-                          [class.bg-light]="!getEstado(m.idMatricula, d)"
-                          [class.text-dark]="getEstado(m.idMatricula, d) === 'TARDANZA' || getEstado(m.idMatricula, d) === 'JUSTIFICADO' || !getEstado(m.idMatricula, d)"
-                          [class.text-white]="getEstado(m.idMatricula, d) === 'PRESENTE' || getEstado(m.idMatricula, d) === 'AUSENTE'"
-                          (click)="toggleMenu(m.idMatricula, d)">
-                          {{ getBadgeLabel(getEstado(m.idMatricula, d)) }}
-                        </button>
-                        @if (openMenuCell === (m.idMatricula + '_' + d)) {
-                          <div class="position-absolute bg-white border rounded shadow-sm p-1"
-                            style="z-index:10;min-width:110px;top:100%;left:50%;transform:translateX(-50%);">
-                            <button class="d-block w-100 text-start btn btn-sm border-0 bg-success text-white mb-1"
-                              (click)="setEstado(m.idMatricula, d, 'PRESENTE')">Presente</button>
-                            <button class="d-block w-100 text-start btn btn-sm border-0 bg-warning text-dark mb-1"
-                              (click)="setEstado(m.idMatricula, d, 'TARDANZA')">Tardanza</button>
-                            <button class="d-block w-100 text-start btn btn-sm border-0 bg-danger text-white mb-1"
-                              (click)="setEstado(m.idMatricula, d, 'AUSENTE')">Ausente</button>
-                            <button class="d-block w-100 text-start btn btn-sm border-0 bg-info text-dark"
-                              (click)="setEstado(m.idMatricula, d, 'JUSTIFICADO')">Justificado</button>
-                          </div>
-                        }
-                      }
-                    </td>
-                  }
-                </tr>
+              </div>
+            </div>
+          </td>
+          @for (d of diasDelMes; track d) {
+          @let cellKey = m.idMatricula + '_' + d;
+          @let isOpen = openMenuCell === cellKey;
+          <td class="dd-asistencia-td-day" [class.is-weekend]="esFinSemana(d)" [class.is-open]="isOpen"
+            (click)="toggleMenu(m.idMatricula, d)">
+            <div class="dd-asistencia-cell">
+              @if (isSaving(m.idMatricula, d)) {
+              <span class="dd-asistencia-spinner"></span>
+              } @else if (isOpen) {
+              <!-- Inline options: P T A J inside the cell -->
+              <div class="dd-asistencia-inline">
+                @for (est of estados; track est) {
+                <button class="dd-inline-opt" [class.active]="getEstado(m.idMatricula, d) === est"
+                  [class.opt-presente]="est === 'PRESENTE'" [class.opt-tardanza]="est === 'TARDANZA'"
+                  [class.opt-ausente]="est === 'AUSENTE'" [class.opt-justificado]="est === 'JUSTIFICADO'"
+                  (click)="setEstado(m.idMatricula, d, est); $event.stopPropagation()">
+                  {{ getBadgeLabel(est) }}
+                </button>
+                }
+              </div>
+              } @else {
+              <div class="dd-asistencia-state-btn"
+                [class.dd-state-presente]="getEstado(m.idMatricula, d) === 'PRESENTE'"
+                [class.dd-state-tardanza]="getEstado(m.idMatricula, d) === 'TARDANZA'"
+                [class.dd-state-ausente]="getEstado(m.idMatricula, d) === 'AUSENTE'"
+                [class.dd-state-justificado]="getEstado(m.idMatricula, d) === 'JUSTIFICADO'"
+                [class.dd-state-none]="!getEstado(m.idMatricula, d)">
+                <span class="dd-state-label">{{ getBadgeLabel(getEstado(m.idMatricula, d)) }}</span>
+              </div>
               }
-            </tbody>
-          </table>
-        </div>
-    </div>
+            </div>
+          </td>
+          }
+        </tr>
+        }
+      </tbody>
+    </table>
+  </div>
 
-    <div class="mt-3 small text-secondary">
-      <span class="badge bg-success me-1">P</span> Presente
-      <span class="badge bg-warning text-dark me-1 ms-2">T</span> Tardanza
-      <span class="badge bg-danger me-1 ms-2">A</span> Ausente
-      <span class="badge bg-info text-dark me-1 ms-2">J</span> Justificado
+  <!-- ═══ Footer ═══ -->
+  <div class="dd-asistencia-footer mt-3">
+    <div class="dd-asistencia-footer-left">
+      <i class="bi bi-info-circle"></i>
+      <span>Haz clic en una celda para cambiar el estado del estudiante en ese día.</span>
     </div>
+    <div class="dd-asistencia-footer-right">
+      <i [class]="'bi ' + (savingCell ? 'bi-arrow-repeat dd-spin' : 'bi-check-circle-fill')"
+        [style.color]="savingCell ? 'var(--ie-ink-muted)' : 'var(--ie-success)'"></i>
+      <span>{{ savingCell ? 'Guardando...' : 'Al día' }}</span>
+    </div>
+  </div>
   }
-}
+  }
+</div>

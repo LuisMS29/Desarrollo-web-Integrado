@@ -1,43 +1,197 @@
-<div>
-  <div class="mb-4">
-    <h1 class="font-display fw-bold h3 mb-1">Mis cursos</h1>
-    <p class="text-secondary mb-0">Cursos que tienes asignados en el período académico vigente.</p>
+<div class="dd-mis-cursos">
+
+  <!-- ══════════════════════════════════════════════════════════
+       HERO — Encabezado con métricas
+       ══════════════════════════════════════════════════════════ -->
+  <div class="dd-mc-hero mb-4">
+    <div class="dd-mc-hero-bg">
+      <div class="dd-mc-orbe dd-mc-orbe-1"></div>
+      <div class="dd-mc-orbe dd-mc-orbe-2"></div>
+      <div class="dd-mc-orbe dd-mc-orbe-3"></div>
+    </div>
+    <div class="dd-mc-hero-content">
+      <div class="d-flex align-items-center gap-3 mb-1">
+        <div class="dd-mc-hero-icon">
+          <i class="bi bi-journal-bookmark-fill"></i>
+        </div>
+        <div>
+          <h1 class="dd-mc-hero-title mb-0">Mis cursos</h1>
+          <p class="dd-mc-hero-sub mb-0">Cursos que tienes asignados en el período académico vigente</p>
+        </div>
+      </div>
+      @if (!loading) {
+      <div class="dd-mc-hero-stats">
+        <div class="dd-mc-hero-stat">
+          <span class="dd-mc-hero-stat-val">{{ cursos.length }}</span>
+          <span class="dd-mc-hero-stat-lbl">cursos</span>
+        </div>
+        @if (totalEstudiantes > 0) {
+        <div class="dd-mc-hero-stat-divider"></div>
+        <div class="dd-mc-hero-stat">
+          <span class="dd-mc-hero-stat-val">{{ totalEstudiantes }}</span>
+          <span class="dd-mc-hero-stat-lbl">estudiantes</span>
+        </div>
+        }
+        @if (cursosConHorario > 0) {
+        <div class="dd-mc-hero-stat-divider"></div>
+        <div class="dd-mc-hero-stat">
+          <span class="dd-mc-hero-stat-val">{{ cursosConHorario }}/{{ cursos.length }}</span>
+          <span class="dd-mc-hero-stat-lbl">con horario</span>
+        </div>
+        }
+      </div>
+      }
+    </div>
   </div>
 
   @if (loading) {
-    <app-loading-state label="Cargando tus cursos..."></app-loading-state>
+    <div class="dd-mc-loading">
+      <div class="dd-loading-spinner"></div>
+      <span>Cargando tus cursos...</span>
+    </div>
   } @else if (cursos.length === 0) {
-    <div class="ie-card p-4 text-center py-5"><p class="text-secondary mb-0">Todavía no tienes cursos asignados.</p></div>
+    <!-- ═══ Empty state ═══ -->
+    <div class="dd-mc-empty">
+      <div class="dd-mc-empty-icon">
+        <i class="bi bi-journal-x"></i>
+      </div>
+      <h3 class="dd-mc-empty-title">Sin cursos asignados</h3>
+      <p class="dd-mc-empty-text">Todavía no tienes cursos asignados para este período. Contacta al director para que te asigne cursos.</p>
+    </div>
   } @else {
-    <div class="row g-3">
-      @for (c of cursos; track c.idCurso) {
-        <div class="col-md-6 col-xl-4">
-          <div class="ie-card p-3 h-100 d-flex flex-column">
-            <div class="mb-2">
-              <span class="badge-rol DOCENTE mb-2 d-inline-block">{{ c.grado?.nombre ?? '—' }}{{ c.seccion?.nombre ?? '' }}</span>
-              <h3 class="font-display h6 fw-bold mb-0">{{ c.asignatura?.nombre ?? '—' }}</h3>
-              <div class="small text-secondary">{{ c.periodoAcademico ? c.periodoAcademico.nombre + ' (' + c.periodoAcademico.anio + ')' : '—' }}</div>
-            </div>
-            <div class="small text-secondary mb-3 flex-grow-1">
-              @if (loadingHorarios) {
-                Cargando horario...
-              } @else if ((horariosPorCurso[c.idCurso] || []).length === 0) {
-                Sin horario asignado.
-              } @else {
-                <ul class="mb-0 ps-3">
-                  @for (h of horariosPorCurso[c.idCurso] || []; track h.idHorario) {
-                    <li>{{ dias[h.diaSemana] ?? h.diaSemana }} · {{ h.horaInicio }}–{{ h.horaFin }}{{ h.aula ? ' · Aula ' + h.aula : '' }}</li>
+    <!-- ══════════════════════════════════════════════════════════
+         FILTROS — Búsqueda + filtro por grado
+         ══════════════════════════════════════════════════════════ -->
+    <div class="dd-mc-filters mb-4">
+      <div class="dd-mc-search">
+        <i class="bi bi-search dd-mc-search-icon"></i>
+        <input
+          type="text"
+          class="dd-mc-search-input"
+          placeholder="Buscar curso por nombre..."
+          [(ngModel)]="searchQuery"
+          (input)="onSearchChange()">
+        @if (searchQuery) {
+          <button class="dd-mc-search-clear" (click)="clearSearch()">
+            <i class="bi bi-x-lg"></i>
+          </button>
+        }
+      </div>
+      <div class="dd-mc-filter-tabs">
+        <button class="dd-mc-filter-tab" [class.active]="activeFilter === 'todos'" (click)="setFilter('todos')">
+          Todos
+          <span class="dd-mc-filter-count">{{ cursos.length }}</span>
+        </button>
+        @for (g of gradosDisponibles; track g) {
+          <button class="dd-mc-filter-tab" [class.active]="activeFilter === g" (click)="setFilter(g)">
+            {{ g }}
+            <span class="dd-mc-filter-count">{{ getGradoCount(g) }}</span>
+          </button>
+        }
+      </div>
+    </div>
+
+    <!-- ═══ Grid de cursos ═══ -->
+    <div class="dd-mc-grid">
+      @for (c of filteredCursos; track c.idCurso; let i = $index) {
+        <div class="dd-mc-card-wrapper" style="--card-i:{{ i }}">
+          <div class="dd-mc-card">
+            <!-- Gradient top bar -->
+            <div class="dd-mc-card-top" [style.background]="cursoGradients[i % cursoGradients.length]"></div>
+
+            <!-- Card body -->
+            <div class="dd-mc-card-body">
+              <!-- Header row -->
+              <div class="dd-mc-card-header">
+                <div class="dd-mc-card-icon" [style.background]="getIconBg(i)" [style.color]="getIconColor(i)">
+                  <i class="bi {{ cursoIcons[i % cursoIcons.length] }}"></i>
+                </div>
+                <span class="dd-mc-card-badge" [style.background]="getBadgeBg(i)" [style.color]="getIconColor(i)">
+                  {{ c.grado?.nombre ?? '—' }}{{ c.seccion?.nombre ?? '' }}
+                </span>
+              </div>
+
+              <!-- Course info -->
+              <h3 class="dd-mc-card-name">{{ c.asignatura?.nombre ?? '—' }}</h3>
+              <div class="dd-mc-card-period">
+                <i class="bi bi-calendar3"></i>
+                {{ c.periodoAcademico ? c.periodoAcademico.nombre + ' (' + c.periodoAcademico.anio + ')' : '—' }}
+              </div>
+
+              <!-- Horarios -->
+              <div class="dd-mc-card-horarios">
+                @if (loadingHorarios) {
+                  <div class="dd-mc-horario-skeleton">
+                    <span class="skeleton-line" style="width:70%"></span>
+                  </div>
+                } @else {
+                  @if ((horariosPorCurso[c.idCurso] || []).length > 0) {
+                    @for (h of horariosPorCurso[c.idCurso]; track h.idHorario) {
+                      <span class="dd-mc-horario-chip" [style.background]="getDiaColor(h.diaSemana).bg" [style.color]="getDiaColor(h.diaSemana).text">
+                        <i class="bi bi-clock"></i>
+                        {{ dias[h.diaSemana] ?? h.diaSemana }}
+                        <span class="dd-mc-horario-time">{{ h.horaInicio }}–{{ h.horaFin }}</span>
+                        @if (h.aula) {
+                          <span class="dd-mc-horario-aula">· Aula {{ h.aula }}</span>
+                        }
+                      </span>
+                    }
+                  } @else {
+                    <span class="dd-mc-no-horario">
+                      <i class="bi bi-clock-history"></i> Sin horario asignado
+                    </span>
                   }
-                </ul>
+                }
+              </div>
+
+              <!-- Students count -->
+              @if (estudiantesPorCurso[c.idCurso] !== undefined) {
+                <div class="dd-mc-card-students">
+                  <div class="dd-mc-students-bar-track">
+                    <div class="dd-mc-students-bar-fill"
+                      [style.width.%]="maxEstudiantes > 0 ? (estudiantesPorCurso[c.idCurso] / maxEstudiantes) * 100 : 0"
+                      [style.background]="cursoGradients[i % cursoGradients.length]">
+                    </div>
+                  </div>
+                  <span class="dd-mc-students-count">
+                    <i class="bi bi-people"></i> {{ estudiantesPorCurso[c.idCurso] }} estudiantes
+                  </span>
+                </div>
               }
             </div>
-            <div class="d-flex gap-2">
-              <a [routerLink]="['/docente/cursos', c.idCurso, 'notas']" class="btn btn-sm btn-primary flex-fill">Notas</a>
-              <a [routerLink]="['/docente/cursos', c.idCurso, 'asistencia']" class="btn btn-sm btn-outline-primary flex-fill">Asistencia</a>
+
+            <!-- Actions footer -->
+            <div class="dd-mc-card-actions">
+              <a [routerLink]="['/docente/cursos', c.idCurso, 'notas']" class="dd-mc-btn dd-mc-btn-primary">
+                <i class="bi bi-clipboard-data"></i>
+                <span>Notas</span>
+              </a>
+              <a [routerLink]="['/docente/cursos', c.idCurso, 'asistencia']" class="dd-mc-btn dd-mc-btn-secondary">
+                <i class="bi bi-person-check"></i>
+                <span>Asistencia</span>
+              </a>
+            </div>
+
+            <!-- Hover arrow -->
+            <div class="dd-mc-card-arrow">
+              <i class="bi bi-arrow-up-right"></i>
             </div>
           </div>
         </div>
       }
+    </div>
+
+    @if (filteredCursos.length === 0) {
+      <div class="dd-mc-no-results">
+        <i class="bi bi-search"></i>
+        <span>No se encontraron cursos con "{{ searchQuery }}"</span>
+        <button class="dd-mc-btn-reset" (click)="clearSearch()">Limpiar búsqueda</button>
+      </div>
+    }
+
+    <!-- ═══ Footer info ═══ -->
+    <div class="dd-mc-footer mt-4">
+      <span>Mostrando {{ filteredCursos.length }} de {{ cursos.length }} cursos</span>
     </div>
   }
 </div>

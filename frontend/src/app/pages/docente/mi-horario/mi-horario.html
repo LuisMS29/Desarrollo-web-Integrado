@@ -1,44 +1,199 @@
-<div>
-  <div class="mb-4">
-    <h1 class="font-display fw-bold h3 mb-1">Mi horario</h1>
-    <p class="text-secondary mb-0">
-      @if (docente) { {{ docente.nombres }} {{ docente.apellidos }} · Código {{ docente.codigoDocente }} }
-    </p>
-  </div>
+<div class="dd-horario">
 
   @if (loading) {
-    <app-loading-state label="Cargando horario..."></app-loading-state>
-  } @else if (horarios.length === 0) {
-    <div class="ie-card p-4 text-center py-5"><p class="text-secondary mb-0">No tienes horarios asignados.</p></div>
+    <div class="dd-mc-loading">
+      <div class="dd-loading-spinner"></div>
+      <span>Cargando tu horario...</span>
+    </div>
   } @else {
-    <div class="ie-card">
-      <div class="table-responsive">
-        <table class="table ie-table mb-0">
-          <thead>
-            <tr>
-              @for (d of diaColumns; track d) {
-                <th class="text-center">{{ dias[d] }}</th>
+    <!-- ══════════════════════════════════════════════════════════
+         HERO — Info del docente + resumen semanal
+         ══════════════════════════════════════════════════════════ -->
+    <div class="dd-horario-hero mb-4">
+      <div class="dd-horario-hero-bg">
+        <div class="dd-horario-orbe dd-horario-orbe-1"></div>
+        <div class="dd-horario-orbe dd-horario-orbe-2"></div>
+        <div class="dd-horario-orbe dd-horario-orbe-3"></div>
+      </div>
+      <div class="dd-horario-hero-content">
+        <div class="d-flex align-items-center gap-3">
+          <div class="dd-horario-hero-icon">
+            <i class="bi bi-calendar-week"></i>
+          </div>
+          <div class="flex-grow-1">
+            <div class="d-flex align-items-center gap-2 flex-wrap">
+              <h1 class="dd-horario-hero-title mb-0">Mi horario</h1>
+              @if (docente) {
+                <span class="dd-horario-badge" style="background:rgba(139,92,246,0.2);color:#a78bfa;border-color:rgba(139,92,246,0.25);">
+                  <i class="bi bi-person-video3 me-1"></i>{{ docente.nombres?.split(' ')[0] }} {{ docente.apellidos?.split(' ')[0] }}
+                </span>
               }
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              @for (d of diaColumns; track d) {
-                <td class="align-top" style="min-width:140px;height:120px;">
-                  @for (h of getHorarioForDay(d); track h.idHorario) {
-                    <div class="border rounded p-2 mb-2 small" style="background:var(--ie-bg-card);">
-                      <div class="fw-semibold">{{ h.curso?.asignatura?.nombre || '—' }}</div>
-                      <div>{{ h.horaInicio }}–{{ h.horaFin }}</div>
-                      @if (h.aula) { <div class="text-secondary">Aula {{ h.aula }}</div> }
-                      <div class="text-secondary">{{ h.curso?.grado?.nombre }}{{ h.curso?.seccion?.nombre }}</div>
-                    </div>
-                  }
-                </td>
-              }
-            </tr>
-          </tbody>
-        </table>
+            </div>
+            @if (docente) {
+              <p class="dd-horario-hero-sub mb-0">
+                <i class="bi bi-person-badge me-1"></i>Código {{ docente.codigoDocente || '—' }}
+                · <i class="bi bi-journal-bookmark me-1"></i>{{ totalCursos }} cursos
+                · <i class="bi bi-clock me-1"></i>{{ totalHorasSemana }}h/semana
+              </p>
+            }
+          </div>
+        </div>
+        @if (horarios.length > 0) {
+        <div class="dd-horario-hero-stats">
+          @for (d of diaColumns; track d) {
+            @if (getHorarioForDay(d).length > 0) {
+              <div class="dd-horario-hero-stat" [class.is-today]="d === todayDay">
+                <span class="dd-horario-hero-stat-val">{{ getHorarioForDay(d).length }}</span>
+                <span class="dd-horario-hero-stat-lbl">{{ diasAbrev[d] }}</span>
+                @if (d === todayDay) {
+                  <span class="dd-horario-today-dot"></span>
+                }
+              </div>
+            }
+          }
+        </div>
+        }
       </div>
     </div>
+
+    @if (horarios.length === 0) {
+      <div class="dd-mc-empty">
+        <div class="dd-mc-empty-icon"><i class="bi bi-calendar-x"></i></div>
+        <h3 class="dd-mc-empty-title">Sin horarios asignados</h3>
+        <p class="dd-mc-empty-text">No tienes horarios asignados para este período. Consulta con el director.</p>
+      </div>
+    } @else {
+      <!-- ══════════════════════════════════════════════════════════
+           BARRA DE DÍAS — Pestañas rápidas
+           ══════════════════════════════════════════════════════════ -->
+      <div class="dd-horario-days-bar mb-3">
+        <div class="dd-horario-days-label">
+          <i class="bi bi-calendar3 me-1"></i> Días:
+        </div>
+        <div class="dd-horario-days-tabs">
+          @for (d of diaColumns; track d) {
+            <button class="dd-horario-day-tab"
+              [class.active]="diaActivo === d"
+              [class.has-classes]="getHorarioForDay(d).length > 0"
+              [class.is-today]="d === todayDay"
+              (click)="setDiaActivo(d)">
+              <span class="dd-horario-day-tab-name">{{ diasAbrev[d] }}</span>
+              @if (d === todayDay) {
+                <span class="dd-horario-day-tab-badge">Hoy</span>
+              }
+              <span class="dd-horario-day-tab-count">{{ getHorarioForDay(d).length }}</span>
+            </button>
+          }
+        </div>
+        <button class="dd-horario-week-btn" (click)="diaActivo = null" [class.active]="!diaActivo">
+          <i class="bi bi-grid-3x3-gap-fill"></i> Semana
+        </button>
+      </div>
+
+      <!-- ══════════════════════════════════════════════════════════
+           VISTA SEMANA — Grid completo
+           ══════════════════════════════════════════════════════════ -->
+      @if (!diaActivo) {
+      <div class="dd-horario-week-grid">
+        @for (d of diaColumns; track d) {
+          <div class="dd-horario-day-col" [class.is-today]="d === todayDay"
+            (click)="setDiaActivo(d)">
+            <div class="dd-horario-day-header">
+              <span class="dd-horario-day-header-name">{{ dias[d] }}</span>
+              <span class="dd-horario-day-header-count">{{ getHorarioForDay(d).length }} clases</span>
+            </div>
+            <div class="dd-horario-day-body">
+              @if (getHorarioForDay(d).length === 0) {
+                <div class="dd-horario-empty-day">Sin clases</div>
+              }
+              @for (h of getHorarioForDay(d); track h.idHorario; let i = $index) {
+                <div class="dd-horario-class-card" style="--card-i:{{ i }}">
+                  <div class="dd-horario-class-time">
+                    <i class="bi bi-clock"></i>
+                    <span>{{ h.horaInicio }} – {{ h.horaFin }}</span>
+                  </div>
+                  <div class="dd-horario-class-name">{{ h.curso?.asignatura?.nombre || '—' }}</div>
+                  <div class="dd-horario-class-meta">
+                    <span class="dd-horario-class-badge">
+                      {{ h.curso?.grado?.nombre }}{{ h.curso?.seccion?.nombre }}
+                    </span>
+                    @if (h.aula) {
+                      <span class="dd-horario-class-aula">
+                        <i class="bi bi-door-open"></i> Aula {{ h.aula }}
+                      </span>
+                    }
+                  </div>
+                </div>
+              }
+            </div>
+          </div>
+        }
+      </div>
+      }
+
+      <!-- ══════════════════════════════════════════════════════════
+           VISTA DÍA — Horario de un día específico
+           ══════════════════════════════════════════════════════════ -->
+      @if (diaActivo) {
+        <div class="dd-horario-day-view">
+          <div class="dd-horario-day-view-header">
+            <div class="d-flex align-items-center gap-3">
+              <div class="dd-horario-day-view-icon" [style.background]="getDiaGradient(diaActivo)">
+                <i class="bi {{ getDiaIcon(diaActivo) }}"></i>
+              </div>
+              <div>
+                <h2 class="dd-horario-day-view-title mb-0">{{ dias[diaActivo] }}</h2>
+                <span class="dd-horario-day-view-sub">{{ getHorarioForDay(diaActivo).length }} clases programadas</span>
+              </div>
+            </div>
+            <button class="dd-horario-back-btn" (click)="diaActivo = null">
+              <i class="bi bi-arrow-left"></i> Vista semana
+            </button>
+          </div>
+          <div class="dd-horario-day-view-body">
+            @if (getHorarioForDay(diaActivo).length === 0) {
+              <div class="dd-horario-day-empty">
+                <i class="bi bi-calendar-check"></i>
+                <span>No tienes clases este día</span>
+              </div>
+            }
+            @for (h of getHorarioForDay(diaActivo); track h.idHorario; let i = $index) {
+              <div class="dd-horario-day-card" style="--card-i:{{ i }}">
+                <div class="dd-horario-day-card-time">
+                  <span class="dd-horario-day-card-time-start">{{ h.horaInicio }}</span>
+                  <span class="dd-horario-day-card-time-sep">—</span>
+                  <span class="dd-horario-day-card-time-end">{{ h.horaFin }}</span>
+                </div>
+                <div class="dd-horario-day-card-line"></div>
+                <div class="dd-horario-day-card-info">
+                  <h3 class="dd-horario-day-card-name">{{ h.curso?.asignatura?.nombre || '—' }}</h3>
+                  <div class="dd-horario-day-card-tags">
+                    <span class="dd-horario-day-card-tag">
+                      <i class="bi bi-mortarboard"></i>
+                      {{ h.curso?.grado?.nombre }}{{ h.curso?.seccion?.nombre }}
+                    </span>
+                    @if (h.aula) {
+                      <span class="dd-horario-day-card-tag">
+                        <i class="bi bi-door-open"></i> Aula {{ h.aula }}
+                      </span>
+                    }
+                    <span class="dd-horario-day-card-tag">
+                      <i class="bi bi-person"></i>
+                      {{ h.curso?.docente?.nombres?.split(' ')[0] || '—' }}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            }
+          </div>
+        </div>
+      }
+
+      <!-- ═══ Footer ═══ -->
+      <div class="dd-horario-footer mt-3">
+        <i class="bi bi-info-circle"></i>
+        <span>{{ totalHorasSemana }} horas de clase distribuidas en {{ diasConClases }} días a la semana.</span>
+      </div>
+    }
   }
 </div>

@@ -17,6 +17,13 @@ export class DocenteNotas implements OnInit {
   notas: any = {};
   loading = true;
   savingCell: string | null = null;
+  evalActiva: number | null = null;
+  obsAbierta: string | null = null;
+
+  studentColors = [
+    '#0284c7', '#10b981', '#8b5cf6', '#f59e0b',
+    '#f43f5e', '#14b8a6', '#ec4899', '#6366f1',
+  ];
 
   constructor(
     private route: ActivatedRoute,
@@ -30,6 +37,39 @@ export class DocenteNotas implements OnInit {
     const cursoId = Number(this.route.snapshot.paramMap.get('cursoId'));
     if (cursoId) this.loadData(cursoId);
     else { this.loading = false; this.cdr.detectChanges(); }
+  }
+
+  get promedioGeneral(): number {
+    const proms = Object.values(this.promediosPorEval).filter((v): v is number => v !== undefined);
+    return proms.length > 0 ? proms.reduce((a, b) => a + b, 0) / proms.length : 0;
+  }
+
+  get promediosPorEval(): Record<number, number> {
+    const proms: Record<number, number> = {};
+    for (const e of this.evaluaciones) {
+      const vals: number[] = [];
+      for (const m of this.matriculas) {
+        const v = this.getValorNum(m.idMatricula, e.idEvaluacion);
+        if (v !== null && v !== undefined) vals.push(v);
+      }
+      if (vals.length > 0) {
+        proms[e.idEvaluacion] = vals.reduce((a, b) => a + b, 0) / vals.length;
+      }
+    }
+    return proms;
+  }
+
+  getStudentColor(index: number): string {
+    return this.studentColors[index % this.studentColors.length];
+  }
+
+  setEvalActiva(id: number): void {
+    this.evalActiva = this.evalActiva === id ? null : id;
+  }
+
+  toggleObs(matriculaId: number, evaluacionId: number): void {
+    const key = `${matriculaId}_${evaluacionId}`;
+    this.obsAbierta = this.obsAbierta === key ? null : key;
   }
 
   loadData(cursoId: number): void {
@@ -63,6 +103,9 @@ export class DocenteNotas implements OnInit {
           this.api.evaluacionesListarPorPeriodo(periodo.idPeriodo).subscribe({
             next: (evaluaciones: any) => {
               this.evaluaciones = evaluaciones || [];
+              if (this.evaluaciones.length > 0) {
+                this.evalActiva = this.evaluaciones[0].idEvaluacion;
+              }
               this.cargarNotasExistentes();
             },
             error: () => { this.loading = false; this.cdr.detectChanges(); }
@@ -112,6 +155,11 @@ export class DocenteNotas implements OnInit {
 
   getValor(matriculaId: number, evaluacionId: number): string {
     return this.notas[`${matriculaId}_${evaluacionId}`]?.valor ?? '';
+  }
+
+  getValorNum(matriculaId: number, evaluacionId: number): number {
+    const v = this.notas[`${matriculaId}_${evaluacionId}`]?.valor;
+    return v !== undefined && v !== '' ? Number(v) : 0;
   }
 
   getObservacion(matriculaId: number, evaluacionId: number): string {

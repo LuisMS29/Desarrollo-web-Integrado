@@ -570,29 +570,30 @@ n
   gap: 0.4rem;
 }
 
-.sidebar-logout-btn {
+.ie-sidebar-footer .sidebar-logout-btn {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(255, 255, 255, 0.06);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  color: #94a3b8;
+  background: rgba(239, 68, 68, 0.08);
+  border: 1px solid rgba(239, 68, 68, 0.15);
+  color: #fca5a5;
   font-size: 0.8rem;
+  border-radius: 10px;
   transition: all 0.2s ease;
 }
 
-.sidebar-logout-btn:hover {
-  background: rgba(239, 68, 68, 0.1);
-  border-color: rgba(239, 68, 68, 0.2);
-  color: #fca5a5;
+.ie-sidebar-footer .sidebar-logout-btn:hover {
+  background: rgba(239, 68, 68, 0.2);
+  border-color: rgba(239, 68, 68, 0.35);
+  color: #fecaca;
 }
 
-.sidebar-toggle-btn {
+.ie-sidebar-footer .sidebar-toggle-btn {
   width: 100%;
   padding: 0.35rem;
-  border-radius: 6px;
-  border: 1px solid rgba(255, 255, 255, 0.06);
-  background: transparent;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.04);
   color: #64748b;
   font-size: 0.75rem;
   cursor: pointer;
@@ -602,10 +603,10 @@ n
   justify-content: center;
 }
 
-.sidebar-toggle-btn:hover {
-  background: rgba(255, 255, 255, 0.06);
-  color: #cbd5e1;
-  border-color: rgba(255, 255, 255, 0.12);
+.ie-sidebar-footer .sidebar-toggle-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: #94a3b8;
+  border-color: rgba(255, 255, 255, 0.18);
 }
 
 /* ── Collapsed sidebar ── */
@@ -4102,6 +4103,7 @@ select.entity-field {
 }
 
 /* ── Metric Cards ── */
+/* ── Stat Cards ── */
 .admin-metrics-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
@@ -4113,34 +4115,22 @@ select.entity-field {
 }
 
 @media (max-width: 768px) {
-  .admin-metrics-grid.grid-3cols {
-    grid-template-columns: repeat(2, 1fr);
-  }
+  .admin-metrics-grid.grid-3cols { grid-template-columns: repeat(2, 1fr); }
 }
 
 @media (max-width: 480px) {
-  .admin-metrics-grid.grid-3cols {
-    grid-template-columns: 1fr;
-  }
+  .admin-metrics-grid.grid-3cols { grid-template-columns: 1fr; }
 }
 
 .admin-metric-link {
-  text-decoration: none;
-  display: block;
+  text-decoration: none; display: block;
   animation: cardEntrance 0.5s var(--ie-ease-out) both;
   animation-delay: var(--metric-delay, 0s);
 }
 
 @keyframes cardEntrance {
-  from {
-    opacity: 0;
-    transform: translateY(20px) scale(0.96);
-  }
-
-  to {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-  }
+  from { opacity: 0; transform: translateY(20px) scale(0.96); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
 }
 
 .admin-metric-card {
@@ -4169,58 +4159,35 @@ select.entity-field {
 }
 
 .admin-metric-icon {
-  width: 42px;
-  height: 42px;
-  border-radius: 12px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 1.2rem;
-  flex-shrink: 0;
+  width: 42px; height: 42px; border-radius: 12px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.2rem; flex-shrink: 0;
   transition: transform 0.3s var(--ie-ease-out);
-  position: relative;
-  z-index: 1;
+  position: relative; z-index: 1;
 }
 
-.admin-metric-card:hover .admin-metric-icon {
-  transform: scale(1.1) rotate(-3deg);
-}
+.admin-metric-card:hover .admin-metric-icon { transform: scale(1.1) rotate(-3deg); }
 
 .admin-metric-pulse {
-  position: absolute;
-  top: -20px;
-  right: -20px;
-  width: 80px;
-  height: 80px;
-  border-radius: 50%;
-  opacity: 0.3;
-  transition: all 0.4s ease;
+  position: absolute; top: -20px; right: -20px;
+  width: 80px; height: 80px; border-radius: 50%;
+  opacity: 0.3; transition: all 0.4s ease;
 }
 
-.admin-metric-card:hover .admin-metric-pulse {
-  transform: scale(1.4);
-  opacity: 0.15;
-}
+.admin-metric-card:hover .admin-metric-pulse { transform: scale(1.4); opacity: 0.15; }
 
-.admin-metric-body {
-  padding: 0 1.1rem 0.6rem;
-}
+.admin-metric-body { padding: 0 1.1rem 0.6rem; }
 
 .admin-metric-label {
-  font-size: 0.68rem;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  color: var(--ie-ink-muted);
-  font-weight: 600;
-  margin-bottom: 0.15rem;
+  font-size: 0.68rem; text-transform: uppercase;
+  letter-spacing: 0.06em; color: var(--ie-ink-muted);
+  font-weight: 600; margin-bottom: 0.15rem;
 }
 
 .admin-metric-value {
   font-family: "Plus Jakarta Sans", sans-serif;
-  font-size: 1.8rem;
-  font-weight: 800;
-  color: var(--ie-primary-dark);
-  line-height: 1.15;
+  font-size: 1.8rem; font-weight: 800;
+  color: var(--ie-primary-dark); line-height: 1.15;
 }
 
 .admin-metric-footer {
@@ -4230,41 +4197,28 @@ select.entity-field {
 }
 
 .admin-metric-action {
-  font-size: 0.7rem;
-  font-weight: 600;
+  font-size: 0.7rem; font-weight: 600;
   color: var(--ie-ink-soft);
-  display: flex;
-  align-items: center;
+  display: flex; align-items: center;
   transition: all 0.2s ease;
 }
 
-.admin-metric-card:hover .admin-metric-action {
-  color: var(--ie-accent-dark);
-}
+.admin-metric-card:hover .admin-metric-action { color: var(--ie-accent-dark); }
 
 .admin-metric-tag {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.25rem;
-  padding: 0.2rem 0.5rem;
-  border-radius: 6px;
-  font-size: 0.65rem;
-  font-weight: 600;
-  white-space: nowrap;
+  display: inline-flex; align-items: center; gap: 0.25rem;
+  padding: 0.2rem 0.5rem; border-radius: 6px;
+  font-size: 0.65rem; font-weight: 600; white-space: nowrap;
 }
 
-.admin-metric-tag i {
-  font-size: 0.55rem;
-}
+.admin-metric-tag i { font-size: 0.55rem; }
 
 .admin-metric-action i {
   font-size: 0.6rem;
   transition: transform 0.2s var(--ie-ease-out);
 }
 
-.admin-metric-card:hover .admin-metric-action i {
-  transform: translateX(3px);
-}
+.admin-metric-card:hover .admin-metric-action i { transform: translateX(3px); }
 
 /* ── General Card ── */
 .admin-card {
@@ -10782,6 +10736,7 @@ select.entity-field {
   align-self: flex-start;
 }
 
+/* ── Chart Card ── */
 /* ── Chart Card ── */
 .ee-chart-card {
   background: var(--ie-card-bg);

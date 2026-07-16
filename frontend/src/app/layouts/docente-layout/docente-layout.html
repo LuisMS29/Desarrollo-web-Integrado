@@ -19,7 +19,7 @@
 
       <div class="fw-semibold text-ink-soft d-none d-md-flex align-items-center gap-2 me-auto">
         <i class="bi bi-hand-wave text-accent" style="font-size:1.1rem;"></i>
-        Bienvenido, <span class="text-dark">{{ auth.user()?.username }}</span>
+        Bienvenido, <span class="text-dark">{{ auth.user()?.nombres || auth.user()?.username }} {{ auth.user()?.apellidos || '' }}</span>
       </div>
 
       <div class="ie-topbar-right">

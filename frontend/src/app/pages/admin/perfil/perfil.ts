@@ -68,6 +68,7 @@ export class AdminPerfil implements OnInit {
   }
 
   passwordForm = { currentPassword: '', newPassword: '', confirmPassword: '' };
+  showPassword = { current: false, new: false, confirm: false };
   changingPassword = false;
 
   cambiarPassword(): void {

@@ -11,6 +11,8 @@ export interface User {
   idPerfil: number | null;
   idUsuario: number;
   fotoUrl?: string;
+  nombres?: string;
+  apellidos?: string;
 }
 
 /** Backend host extracted from the API base URL */
@@ -62,10 +64,27 @@ export class AuthService {
       localStorage.setItem('ie_token', data.token);
       localStorage.setItem('ie_user', JSON.stringify(loggedUser));
       this.userSignal.set(loggedUser);
+      await this.loadFullName(loggedUser);
       return loggedUser;
     } finally {
       this.loading.set(false);
     }
+  }
+
+  private async loadFullName(user: User): Promise<void> {
+    try {
+      if (user.rol === 'DOCENTE') {
+        const data: any = await this.api.docentePanel.obtenerMiFicha().toPromise();
+        user.nombres = data.nombres;
+        user.apellidos = data.apellidos;
+      } else if (user.rol === 'ESTUDIANTE') {
+        const data: any = await this.api.estudiantePanel.obtenerMiFicha().toPromise();
+        user.nombres = data.nombres;
+        user.apellidos = data.apellidos;
+      }
+      localStorage.setItem('ie_user', JSON.stringify(user));
+      this.userSignal.set(user);
+    } catch {}
   }
 
   async refreshProfile(): Promise<User | null> {

@@ -17,6 +17,7 @@ export class DocentePerfil implements OnInit {
   previewUrl: string | null = null;
   fotoPreviewOpen = false;
   passwordForm = { currentPassword: '', newPassword: '', confirmPassword: '' };
+  showPassword = { current: false, new: false, confirm: false };
   changingPassword = false;
 
   constructor(

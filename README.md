@@ -165,7 +165,7 @@ npm start
 | `mlopez` | `123456` | DOCENTE |
 | `cgarcia` | `123456` | DOCENTE |
 | `atorres` | `123456` | DOCENTE |
-| `lcastillo` | `123456` | ESTUDIANTE |
+| `jcastillo` | `123456` | ESTUDIANTE |
 | `mvelarde` | `123456` | ESTUDIANTE |
 | `drojas` | `123456` | ESTUDIANTE |
 | `cquispe` | `123456` | ESTUDIANTE |
